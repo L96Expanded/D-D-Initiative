@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: dnd_postgres
+    environment:
+      POSTGRES_DB: dnd_tracker
+      POSTGRES_USER: dnd_user
+      POSTGRES_PASSWORD: secure_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - dnd_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dnd_user -d dnd_tracker"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: dnd_backend
+    environment:
+      DATABASE_URL: postgresql://dnd_user:secure_password@postgres:5432/dnd_tracker
+      JWT_SECRET: your_jwt_secret_key_change_in_production
+      JWT_ALGORITHM: HS256
+      JWT_EXPIRATION_HOURS: 24
+      UPLOAD_DIR: /app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./backend:/app
+    networks:
+      - dnd_network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: dnd_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    networks:
+      - dnd_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  dnd_network:
+    driver: bridge

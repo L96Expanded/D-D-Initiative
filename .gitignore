@@ -1,0 +1,24 @@
+# Global .gitignore
+# Node, Python, Docker, and OS files
+
+# Node
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv/
+
+# Docker
+*.log
+docker-compose.override.yml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
