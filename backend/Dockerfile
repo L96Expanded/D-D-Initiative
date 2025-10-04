@@ -8,6 +8,10 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
+
+# Install bcrypt at a compatible version before requirements
+RUN pip install --upgrade bcrypt==4.0.1
+
 # Copy requirements first for better caching
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt

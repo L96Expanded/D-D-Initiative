@@ -3,15 +3,9 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import uuid
-import enum
 
 from .database import Base
-
-class CreatureType(enum.Enum):
-    PLAYER = "player"
-    ENEMY = "enemy"
-    ALLY = "ally"
-    OTHER = "other"
+from .enums import CreatureType
 
 class User(Base):
     __tablename__ = "users"

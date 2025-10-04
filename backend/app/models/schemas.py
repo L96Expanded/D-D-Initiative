@@ -2,13 +2,7 @@ from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from typing import Optional, List
 from datetime import datetime
 import uuid
-from enum import Enum
-
-class CreatureType(str, Enum):
-    PLAYER = "player"
-    ENEMY = "enemy"
-    ALLY = "ally"
-    OTHER = "other"
+from .enums import CreatureType
 
 # User Schemas
 class UserBase(BaseModel):

@@ -93,7 +93,7 @@ async def upload_image(
     try:
         # Save the file
         filename = await save_image(file, "user_uploads")
-        file_url = f"/uploads/user_uploads/{filename}"
+        file_url = f"/uploads/{filename}"
         
         return FileUpload(filename=filename, url=file_url)
     

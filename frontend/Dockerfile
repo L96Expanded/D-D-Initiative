@@ -5,8 +5,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+	# Install all dependencies (including dev)
+	RUN npm install
 
 # Copy source code
 COPY . .
@@ -15,6 +15,8 @@ COPY . .
 RUN npm run build
 
 # Use nginx to serve the built app
+	# Remove dev dependencies for final image
+	RUN npm prune --production
 FROM nginx:alpine
 
 # Copy built files to nginx

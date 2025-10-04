@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
@@ -7,7 +7,10 @@ import Home from './pages/Home';
 import Encounter from './pages/Encounter';
 
 // Protected Route Component
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+}
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
   
   if (loading) {
@@ -25,7 +28,10 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 };
 
 // Public Route Component (redirect if authenticated)
-const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+interface PublicRouteProps {
+  children: React.ReactNode;
+}
+const PublicRoute: React.FC<PublicRouteProps> = ({ children }: PublicRouteProps) => {
   const { user, loading } = useAuth();
   
   if (loading) {

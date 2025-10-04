@@ -1,29 +1,67 @@
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { uploadAPI } from '../utils/api';
-import type { CreateEncounter, EncounterSummary, CreateCreature, CreatureType } from '../types';
+import type { Encounter, UpdateEncounter, CreateCreature, CreatureType } from '../types';
 
-interface EncounterModalProps {
+interface EditEncounterModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: CreateEncounter) => void;
-  initialData?: EncounterSummary | null;
+  onSubmit: (id: string, data: UpdateEncounter, creatures: CreateCreature[]) => void;
+  encounterId: string;
+  initialData: Encounter;
 }
 
 interface Initiative {
+  id?: string; // for existing creatures
   name: string;
   initiative: number;
   creature_type: CreatureType;
+  image_url?: string;
   image_file?: File;
+  isNew?: boolean; // to track new vs existing creatures
 }
 
-const EncounterModal: React.FC<EncounterModalProps> = ({ isOpen, onClose, onSubmit, initialData }) => {
+const EditEncounterModal: React.FC<EditEncounterModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  onSubmit, 
+  encounterId,
+  initialData 
+}) => {
   const [encounterName, setEncounterName] = useState(initialData?.name || '');
   const [backgroundImageFile, setBackgroundImageFile] = useState<File | null>(null);
-  const [initiatives, setInitiatives] = useState<Initiative[]>([
-    { name: '', initiative: 0, creature_type: 'enemy' }
-  ]);
+  const [initiatives, setInitiatives] = useState<Initiative[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
+
+  // Initialize form when modal opens or data changes
+  useEffect(() => {
+    if (initialData && isOpen) {
+      setEncounterName(initialData.name);
+      setBackgroundImageFile(null); // Reset file input for new editing session
+      
+      // Convert existing creatures to initiative format
+      const existingInitiatives: Initiative[] = initialData.creatures.map(creature => ({
+        id: creature.id,
+        name: creature.name,
+        initiative: creature.initiative,
+        creature_type: creature.creature_type,
+        image_url: creature.image_url,
+        isNew: false
+      }));
+      
+      // If no creatures exist, add one empty row
+      if (existingInitiatives.length === 0) {
+        existingInitiatives.push({
+          name: '',
+          initiative: 0,
+          creature_type: 'enemy',
+          isNew: true
+        });
+      }
+      
+      setInitiatives(existingInitiatives);
+    }
+  }, [initialData, isOpen]);
 
   const handleInitiativeChange = (idx: number, field: keyof Initiative, value: string | number | File) => {
     const updated = [...initiatives];
@@ -31,16 +69,25 @@ const EncounterModal: React.FC<EncounterModalProps> = ({ isOpen, onClose, onSubm
       updated[idx][field] = Number(value);
     } else if (field === 'image_file') {
       updated[idx][field] = value as File;
+      // Clear the image_url when a new file is selected
+      updated[idx].image_url = undefined;
     } else if (field === 'creature_type') {
       updated[idx][field] = value as CreatureType;
-    } else {
+    } else if (field === 'name') {
+      updated[idx][field] = value as string;
+    } else if (field === 'image_url') {
       updated[idx][field] = value as string;
     }
     setInitiatives(updated);
   };
 
   const handleAddInitiative = () => {
-    setInitiatives([...initiatives, { name: '', initiative: 0, creature_type: 'enemy' }]);
+    setInitiatives([...initiatives, { 
+      name: '', 
+      initiative: 0, 
+      creature_type: 'enemy',
+      isNew: true 
+    }]);
   };
 
   const handleRemoveInitiative = (idx: number) => {
@@ -64,55 +111,57 @@ const EncounterModal: React.FC<EncounterModalProps> = ({ isOpen, onClose, onSubm
       }
     }
 
-    setFormError(null);
-
     try {
       // Upload background image if provided
-      let backgroundImageUrl = undefined;
+      let backgroundImageUrl = initialData?.background_image; // Keep existing background if no new file
       if (backgroundImageFile) {
         try {
           const uploadResult = await uploadAPI.uploadImage(backgroundImageFile);
           backgroundImageUrl = uploadResult.url;
         } catch (error) {
-          console.warn('Failed to upload background image:', error);
-          // Continue without background image rather than failing entirely
+          console.error('Failed to upload background image:', error);
+          setFormError('Failed to upload background image. Please try again.');
+          return;
         }
       }
 
-      // Upload image files and get URLs
-      const creatures: CreateCreature[] = await Promise.all(
-        initiatives.map(async (init) => {
-          let imageUrl = undefined;
-          
-          if (init.image_file) {
-            try {
-              const uploadResult = await uploadAPI.uploadImage(init.image_file);
-              imageUrl = uploadResult.url;
-            } catch (error) {
-              console.warn(`Failed to upload image for ${init.name}:`, error);
-              // Continue without image rather than failing entirely
-            }
-          }
-
-          return {
-            name: init.name,
-            initiative: init.initiative,
-            creature_type: init.creature_type,
-            image_url: imageUrl
-          };
-        })
-      );
-
-      onSubmit({ name: encounterName, background_image: backgroundImageUrl, creatures });
+      // Process creatures and handle file uploads
+      const creatures: CreateCreature[] = [];
       
-      // Reset form
-      setEncounterName('');
-      setBackgroundImageFile(null);
-      setInitiatives([{ name: '', initiative: 0, creature_type: 'enemy' }]);
+      for (const init of initiatives) {
+        let imageUrl = init.image_url;
+        
+        // If a file was uploaded, upload it first and get the URL
+        if (init.image_file) {
+          try {
+            const uploadResult = await uploadAPI.uploadImage(init.image_file);
+            imageUrl = uploadResult.url;
+          } catch (error) {
+            console.error('Failed to upload image for creature:', init.name, error);
+            setFormError(`Failed to upload image for ${init.name}. Please try again.`);
+            return;
+          }
+        }
+        
+        creatures.push({
+          name: init.name,
+          initiative: init.initiative,
+          creature_type: init.creature_type,
+          image_url: imageUrl
+        });
+      }
+
+      const updateData: UpdateEncounter = {
+        name: encounterName,
+        background_image: backgroundImageUrl || undefined
+      };
+
+      onSubmit(encounterId, updateData, creatures);
       setFormError(null);
       onClose();
     } catch (error) {
-      setFormError('Failed to create encounter. Please try again.');
+      console.error('Error submitting form:', error);
+      setFormError('Failed to save encounter. Please try again.');
     }
   };
 
@@ -120,12 +169,12 @@ const EncounterModal: React.FC<EncounterModalProps> = ({ isOpen, onClose, onSubm
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content max-w-4xl">
+      <div className="modal-content max-w-3xl">
         <h3 className="text-xl font-bold mb-4 text-center">
-          {initialData ? 'Edit Encounter' : 'Create New Encounter'}
+          Edit Encounter
         </h3>
         <button
-          className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl"
+          className="absolute top-4 right-4 btn btn-secondary btn-sm"
           onClick={onClose}
           aria-label="Close modal"
         >
@@ -134,10 +183,10 @@ const EncounterModal: React.FC<EncounterModalProps> = ({ isOpen, onClose, onSubm
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="form-label">Encounter Name</label>
+            <label className="block text-left mb-2">Encounter Name</label>
             <input
               type="text"
-              className="form-input"
+              className="w-full px-4 py-2 rounded-sm bg-gray-900 text-white border border-gray-700"
               value={encounterName}
               onChange={e => setEncounterName(e.target.value)}
               required
@@ -145,19 +194,22 @@ const EncounterModal: React.FC<EncounterModalProps> = ({ isOpen, onClose, onSubm
           </div>
           
           <div>
-            <label className="form-label">Background Image</label>
+            <label className="block text-left mb-2">Background Image</label>
             <input
               type="file"
-              className="form-input"
+              className="w-full px-4 py-2 rounded-sm bg-gray-900 text-white border border-gray-700"
               accept="image/*"
               onChange={e => setBackgroundImageFile(e.target.files?.[0] || null)}
             />
+            <div className="mt-2 text-sm text-gray-400">
+              {initialData?.background_image ? 'Current background will be kept if no new file is selected' : 'No background image currently set'}
+            </div>
             {backgroundImageFile && (
               <div className="mt-2">
                 <img 
                   src={URL.createObjectURL(backgroundImageFile)} 
                   alt="Background preview" 
-                  className="w-full h-32 object-cover rounded border border-gray-600"
+                  className="w-full h-32 object-cover rounded border border-gray-700"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
                   }}
@@ -226,9 +278,9 @@ const EncounterModal: React.FC<EncounterModalProps> = ({ isOpen, onClose, onSubm
                     accept="image/*"
                     onChange={e => e.target.files && handleInitiativeChange(idx, "image_file", e.target.files[0])}
                   />
-                  {init.image_file && (
+                  {(init.image_url || init.image_file) && (
                     <img 
-                      src={URL.createObjectURL(init.image_file)} 
+                      src={init.image_file ? URL.createObjectURL(init.image_file) : init.image_url} 
                       alt={`${init.name} preview`}
                       className="w-8 h-8 object-cover rounded border border-gray-500"
                       onError={(e) => {
@@ -236,20 +288,23 @@ const EncounterModal: React.FC<EncounterModalProps> = ({ isOpen, onClose, onSubm
                       }}
                     />
                   )}
+                  {init.image_url && !init.image_file && (
+                    <span className="text-xs text-gray-400">Current image kept</span>
+                  )}
                 </div>
               </div>
             ))}
           </div>
 
           {formError && (
-            <div className="form-error bg-red-900 border border-red-500 rounded p-3">
+            <div className="modal-error text-red-400 text-sm bg-red-500/20 border border-red-500 rounded p-3">
               {formError}
             </div>
           )}
 
-          <div className="flex gap-3 pt-4">
-            <button type="submit" className="btn btn-success flex-1">
-              {initialData ? 'Save Changes' : 'Create Encounter'}
+          <div className="modal-buttons flex gap-3 pt-4">
+            <button type="submit" className="btn btn-primary flex-1">
+              Save Changes
             </button>
             <button type="button" className="btn btn-secondary flex-1" onClick={onClose}>
               Cancel
@@ -261,4 +316,4 @@ const EncounterModal: React.FC<EncounterModalProps> = ({ isOpen, onClose, onSubm
   );
 };
 
-export default EncounterModal;
+export default EditEncounterModal;

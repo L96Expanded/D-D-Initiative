@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import * as React from 'react';
+import { useState, useEffect } from 'react';
 import Modal from './Modal';
 import type { CreateCreature, CreatureType } from '../types';
 
@@ -10,11 +11,30 @@ interface CreatureModalProps {
 }
 
 const CreatureModal: React.FC<CreatureModalProps> = ({ isOpen, onClose, onSubmit, initialData }) => {
-  const [name, setName] = useState(initialData?.name || '');
-  const [initiative, setInitiative] = useState(initialData?.initiative || 0);
-  const [creatureType, setCreatureType] = useState<CreatureType>(initialData?.creature_type || 'enemy');
-  const [imageUrl, setImageUrl] = useState(initialData?.image_url || '');
+  const [name, setName] = useState('');
+  const [initiative, setInitiative] = useState(0);
+  const [creatureType, setCreatureType] = useState<CreatureType>('enemy');
+  const [imageUrl, setImageUrl] = useState('');
   const [error, setError] = useState<string | null>(null);
+
+  // Update form fields when initialData changes or modal opens
+  useEffect(() => {
+    if (isOpen) {
+      if (initialData) {
+        setName(initialData.name || '');
+        setInitiative(initialData.initiative || 0);
+        setCreatureType(initialData.creature_type || 'enemy');
+        setImageUrl(initialData.image_url || '');
+      } else {
+        // Reset form for new creature
+        setName('');
+        setInitiative(0);
+        setCreatureType('enemy');
+        setImageUrl('');
+      }
+      setError(null);
+    }
+  }, [isOpen, initialData]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,13 +46,10 @@ const CreatureModal: React.FC<CreatureModalProps> = ({ isOpen, onClose, onSubmit
       setError('Initiative must be 0 or greater');
       return;
     }
-    onSubmit({ name, initiative, creature_type: creatureType, image_url: imageUrl });
-    setName('');
-    setInitiative(0);
-    setCreatureType('enemy');
-    setImageUrl('');
+    
     setError(null);
-    onClose();
+    onSubmit({ name, initiative, creature_type: creatureType, image_url: imageUrl });
+    onClose(); // Let the parent handle form reset via useEffect
   };
 
   return (

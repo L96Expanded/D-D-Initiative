@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import * as React from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { isValidEmail } from '../utils/helpers';
@@ -52,7 +53,7 @@ const Register: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="glass w-full max-w-md p-8">
+      <div className="glass w-60 max-w-md p-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2">Join the Adventure</h1>
           <p className="text-gray-300">Create your D&D Initiative Tracker account</p>
@@ -76,6 +77,7 @@ const Register: React.FC = () => {
               placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
               required
             />
           </div>
@@ -91,6 +93,7 @@ const Register: React.FC = () => {
               placeholder="Enter your password (min 6 characters)"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              autoComplete="new-password"
               required
               minLength={6}
             />
@@ -107,6 +110,7 @@ const Register: React.FC = () => {
               placeholder="Confirm your password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              autoComplete="new-password"
               required
             />
           </div>

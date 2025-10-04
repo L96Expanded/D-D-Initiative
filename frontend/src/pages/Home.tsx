@@ -1,8 +1,11 @@
 
-import React, { useEffect, useState } from 'react';
+import * as React from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { encountersAPI } from '../utils/api';
-import type { EncounterSummary } from '../types';
+import type { EncounterSummary, CreateEncounter, Encounter, UpdateEncounter, CreateCreature } from '../types';
+import EncounterModal from '../components/EncounterModal';
+import EditEncounterModal from '../components/EditEncounterModal';
 
 const Home: React.FC = () => {
   const { user, logout } = useAuth();
@@ -10,6 +13,9 @@ const Home: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingEncounter, setEditingEncounter] = useState<Encounter | null>(null);
 
   useEffect(() => {
     const fetchEncounters = async () => {
@@ -32,13 +38,86 @@ const Home: React.FC = () => {
   );
 
   const handleCreate = () => {
-    // TODO: Open create encounter modal
-    alert('Create Encounter modal coming soon!');
+    console.log('handleCreate called, setting showCreateModal to true');
+    setShowCreateModal(true);
   };
 
-  const handleEdit = (id: string) => {
-    // TODO: Open edit encounter modal
-    alert(`Edit Encounter ${id} modal coming soon!`);
+  const handleCreateSubmit = async (data: CreateEncounter) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const newEncounter = await encountersAPI.create(data);
+      // Convert to EncounterSummary if needed
+      const summary: EncounterSummary = {
+        id: newEncounter.id,
+        name: newEncounter.name,
+        background_image: newEncounter.background_image,
+        created_at: newEncounter.created_at,
+        creature_count: newEncounter.creatures ? newEncounter.creatures.length : 0,
+      };
+      setEncounters(prev => [...prev, summary]);
+      setShowCreateModal(false);
+    } catch (err: any) {
+      setError(err?.response?.data?.detail || 'Failed to create encounter');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEdit = async (id: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const encounter = await encountersAPI.getById(id);
+      setEditingEncounter(encounter);
+      setShowEditModal(true);
+    } catch (err: any) {
+      setError(err?.response?.data?.detail || 'Failed to load encounter for editing');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditSubmit = async (id: string, updateData: UpdateEncounter, creatures: CreateCreature[]) => {
+    setLoading(true);
+    setError(null);
+    try {
+      // For simplicity, we'll recreate the encounter with updated data and creatures
+      // First, get the current encounter to preserve any data
+      const currentEncounter = await encountersAPI.getById(id);
+      
+      // Delete existing encounter
+      await encountersAPI.delete(id);
+      
+      // Create new encounter with updated data and creatures
+      const newEncounterData = {
+        name: updateData.name || currentEncounter.name,
+        background_image: updateData.background_image || currentEncounter.background_image,
+        creatures: creatures
+      };
+      
+      const newEncounter = await encountersAPI.create(newEncounterData);
+      
+      // Update the encounters list with the new encounter
+      setEncounters(prev => prev.map(enc => 
+        enc.id === id 
+          ? { 
+              ...enc, 
+              id: newEncounter.id, // Update with new ID
+              name: newEncounter.name, 
+              background_image: newEncounter.background_image,
+              creature_count: newEncounter.creatures ? newEncounter.creatures.length : 0
+            }
+          : enc
+      ));
+      
+      setShowEditModal(false);
+      setEditingEncounter(null);
+    } catch (err: any) {
+      setError(err?.response?.data?.detail || 'Failed to update encounter');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -55,7 +134,7 @@ const Home: React.FC = () => {
     <div className="min-h-screen p-4">
       <div className="container mx-auto max-w-3xl">
         <header className="glass p-6 mb-8">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center p-8">
             <div>
               <h1 className="text-2xl font-bold">D&D Initiative Tracker</h1>
               <p className="text-gray-300">Welcome back, {user?.email}</p>
@@ -78,7 +157,7 @@ const Home: React.FC = () => {
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                 />
-                <button className="btn btn-primary" onClick={handleCreate}>
+                <button className="btn btn-primary" style={{ marginLeft: '30px' }} onClick={handleCreate}>
                   Create New Encounter
                 </button>
               </div>
@@ -93,17 +172,16 @@ const Home: React.FC = () => {
             ) : (
               <ul className="space-y-4">
                 {filteredEncounters.map(encounter => (
-                  <li key={encounter.id} className="glass-heavy p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div>
-                      <h3 className="text-lg font-bold mb-1">{encounter.name}</h3>
-                      <p className="text-gray-400 text-sm mb-2">Created: {new Date(encounter.created_at).toLocaleDateString()}</p>
-                      <p className="text-gray-300 text-sm">Creatures: {encounter.creature_count}</p>
+                  <li key={encounter.id} className="glass-heavy p-4 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4 flex-1 ">
+                      <h3 className="text-lg font-bold">{encounter.name}</h3>
+                      <p className="text-gray-400 text-sm">Created: {new Date(encounter.created_at).toLocaleDateString()}</p>
                     </div>
                     <div className="flex gap-2">
-                      <button className="btn btn-secondary" onClick={() => handleEdit(encounter.id)}>
+                      <button className="btn btn-secondary" style={{ marginRight: '15px' }} onClick={() => handleEdit(encounter.id)}>
                         Edit
                       </button>
-                      <button className="btn btn-danger" onClick={() => handleDelete(encounter.id)}>
+                      <button className="btn btn-danger" style={{ marginRight: '15px' }} onClick={() => handleDelete(encounter.id)}>
                         Delete
                       </button>
                       <a href={`/encounter/${encounter.id}`} className="btn btn-success">
@@ -116,6 +194,33 @@ const Home: React.FC = () => {
             )}
           </div>
         </main>
+
+        {/* Create Encounter Modal */}
+        {(() => {
+          console.log('showCreateModal state:', showCreateModal);
+          return null;
+        })()}
+        {showCreateModal && (
+          <EncounterModal
+            isOpen={showCreateModal}
+            onClose={() => setShowCreateModal(false)}
+            onSubmit={handleCreateSubmit}
+          />
+        )}
+
+        {/* Edit Encounter Modal */}
+        {showEditModal && editingEncounter && (
+          <EditEncounterModal
+            isOpen={showEditModal}
+            onClose={() => {
+              setShowEditModal(false);
+              setEditingEncounter(null);
+            }}
+            onSubmit={handleEditSubmit}
+            encounterId={editingEncounter.id}
+            initialData={editingEncounter}
+          />
+        )}
       </div>
     </div>
   );

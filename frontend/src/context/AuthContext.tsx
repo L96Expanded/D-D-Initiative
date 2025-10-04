@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import type { AuthContextType, User, LoginData, RegisterData } from '../types';
+import * as React from 'react';
+import { createContext, useContext, useReducer, useEffect } from 'react';
+import type { AuthContextType, User } from '../types';
 import { authAPI } from '../utils/api';
 import { storage } from '../utils/helpers';
 
