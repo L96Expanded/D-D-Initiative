@@ -1,24 +1,3 @@
-## 🤖 GitHub Copilot Instructions
-
-This project is designed to work seamlessly with GitHub Copilot in VS Code.
-
-### How to Use Copilot
-- Ensure you have the **GitHub Copilot** extension installed in VS Code.
-- Use natural language comments or prompts to generate code, refactor, or get suggestions.
-- Copilot will assist with:
-   - React/TypeScript components
-   - FastAPI backend endpoints
-   - SQLAlchemy models and migrations
-   - Docker and infrastructure files
-   - CSS and glassmorphism design
-- For best results, keep your prompts clear and specific.
-
-### Example Prompts
-- "Create a FastAPI router for encounters with CRUD endpoints."
-- "Generate a React modal component for editing creatures."
-- "Add JWT authentication to the backend."
-
-For more info, see [GitHub Copilot documentation](https://docs.github.com/en/copilot).
 # 🎲 D&D Initiative Tracker
 
 A modern, full-stack web application for tracking D&D encounters with a beautiful glassmorphism design. Built with React, FastAPI, and PostgreSQL.
@@ -53,45 +32,52 @@ A modern, full-stack web application for tracking D&D encounters with a beautifu
 - **Nginx** for frontend serving
 - **Volume mounting** for data persistence
 
-## 🚀 Quick Start
+## 🚀 Quick Setup
 
 ### Prerequisites
-- **Docker Desktop** installed and running
-- **Git** for cloning the repository
+- **Docker Desktop** - [Download here](https://www.docker.com/products/docker-desktop/)
+- **Git** - [Download here](https://git-scm.com/downloads)
 
 ### Installation
 
-1. **Clone the repository**
+1. **Clone and Start**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/L96Expanded/D-D-Initiative.git
    cd D-D-Initiative
-   ```
-
-2. **Environment Setup**
-   
-   The project includes a `.env` file with development defaults. For production, update these values:
-   ```env
-   # Database
-   POSTGRES_DB=dnd_tracker
-   POSTGRES_USER=dnd_user
-   POSTGRES_PASSWORD=secure_password
-   
-   # JWT (CHANGE IN PRODUCTION!)
-   JWT_SECRET=your_jwt_secret_key_change_in_production
-   
-   # API URLs
-   VITE_API_URL=http://localhost:8000
-   ```
-
-3. **Start the Application**
-   ```bash
    docker-compose up --build
    ```
 
-4. **Access the Application**
+2. **Access the Application**
    - **Frontend**: http://localhost:3000
    - **Backend API**: http://localhost:8000
    - **API Documentation**: http://localhost:8000/docs
+
+3. **First Use**
+   - Register a new account at http://localhost:3000
+   - Create encounters and start tracking initiative!
+
+### Stop the Application
+```bash
+docker-compose down
+```
+
+### Basic Troubleshooting
+
+**Port Conflicts:**
+- Ensure ports 3000, 8000, and 5432 are available
+- Change ports in `docker-compose.yml` if needed
+
+**Reset Everything:**
+```bash
+docker-compose down -v
+docker-compose up --build
+```
+
+**View Logs:**
+```bash
+docker-compose logs backend
+docker-compose logs frontend
+```
 
 ## 📁 Project Structure
 
@@ -136,48 +122,6 @@ For detailed instructions, API documentation, and troubleshooting, see the full 
 Happy adventuring! 🗡️✨
 
 ---
-
-## 🏁 How to Activate and Access the Webapp
-
-### 1. Prerequisites
-- Install **Docker Desktop** and ensure it is running
-- Install **Git**
-
-### 2. Clone the Repository
-```bash
-git clone <repository-url>
-cd D-D-Initiative
-```
-
-### 3. Configure Environment Variables
-- Edit the `.env` file if needed (defaults provided for development)
-- Ensure values for database, JWT secret, and API URLs are set
-
-### 4. Build and Start All Services
-```bash
-docker-compose up --build
-```
-- This will start PostgreSQL, FastAPI backend, and React frontend
-
-### 5. Access the Web Application
-- **Frontend**: [http://localhost:3000](http://localhost:3000)
-- **Backend API**: [http://localhost:8000](http://localhost:8000)
-- **API Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
-
-### 6. First Use
-- Open the frontend in your browser
-- Register a new account
-- Log in and start creating encounters and creatures
-
-### 7. Stopping the App
-```bash
-docker-compose down
-```
-
-### 8. Troubleshooting
-- Check container logs with `docker-compose logs`
-- Ensure ports 3000 and 8000 are not blocked
-- For database issues, check the `uploads/` and volume mounts
 
 ## 🧪 Testing
 
