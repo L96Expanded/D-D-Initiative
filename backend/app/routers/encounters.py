@@ -6,7 +6,7 @@ from app.models.database import get_db
 from app.models.models import User, Encounter, Creature
 from app.models.schemas import (
     EncounterCreate, EncounterUpdate, EncounterResponse, 
-    EncounterSummary, CreatureCreate, CreatureResponse, ErrorResponse
+    EncounterSummary, CreatureCreate, CreatureUpdate, CreatureResponse, ErrorResponse
 )
 from app.utils.dependencies import get_current_user
 import uuid
@@ -148,7 +148,7 @@ async def delete_encounter(
     
     return {"message": "Encounter deleted successfully"}
 
-@router.get("/{encounter_id}/creatures", response_model=List[EncounterResponse])
+@router.get("/{encounter_id}/creatures", response_model=List[CreatureResponse])
 async def get_encounter_creatures(
     encounter_id: uuid.UUID,
     current_user: User = Depends(get_current_user),
@@ -172,6 +172,29 @@ async def get_encounter_creatures(
     ).order_by(Creature.initiative.desc()).all()
     
     return [CreatureResponse.model_validate(creature) for creature in creatures]
+
+@router.get("/{encounter_id}/creatures/{creature_id}", response_model=CreatureResponse)
+async def get_creature(
+    encounter_id: uuid.UUID,
+    creature_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get a specific creature from an encounter."""
+    # Verify encounter ownership and creature belongs to encounter
+    creature = db.query(Creature).join(Encounter).filter(
+        Creature.id == creature_id,
+        Creature.encounter_id == encounter_id,
+        Encounter.user_id == current_user.id
+    ).first()
+    
+    if not creature:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Creature not found"
+        )
+    
+    return CreatureResponse.model_validate(creature)
 
 @router.post("/{encounter_id}/creatures", response_model=CreatureResponse, status_code=status.HTTP_201_CREATED)
 async def add_creature_to_encounter(
@@ -205,3 +228,66 @@ async def add_creature_to_encounter(
     db.refresh(db_creature)
     
     return CreatureResponse.model_validate(db_creature)
+
+@router.put("/{encounter_id}/creatures/{creature_id}", response_model=CreatureResponse)
+async def update_creature(
+    encounter_id: uuid.UUID,
+    creature_id: uuid.UUID,
+    creature_data: CreatureUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update a creature in an encounter."""
+    # Verify encounter ownership and creature belongs to encounter
+    creature = db.query(Creature).join(Encounter).filter(
+        Creature.id == creature_id,
+        Creature.encounter_id == encounter_id,
+        Encounter.user_id == current_user.id
+    ).first()
+    
+    if not creature:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Creature not found"
+        )
+    
+    # Update fields
+    if creature_data.name is not None:
+        creature.name = creature_data.name
+    if creature_data.initiative is not None:
+        creature.initiative = creature_data.initiative
+    if creature_data.creature_type is not None:
+        creature.creature_type = creature_data.creature_type
+    if creature_data.image_url is not None:
+        creature.image_url = creature_data.image_url
+    
+    db.commit()
+    db.refresh(creature)
+    
+    return CreatureResponse.model_validate(creature)
+
+@router.delete("/{encounter_id}/creatures/{creature_id}", status_code=status.HTTP_200_OK)
+async def delete_creature(
+    encounter_id: uuid.UUID,
+    creature_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Delete a creature from an encounter."""
+    # Verify encounter ownership and creature belongs to encounter
+    creature = db.query(Creature).join(Encounter).filter(
+        Creature.id == creature_id,
+        Creature.encounter_id == encounter_id,
+        Encounter.user_id == current_user.id
+    ).first()
+    
+    if not creature:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Creature not found"
+        )
+    
+    db.delete(creature)
+    db.commit()
+    
+    return {"message": "Creature deleted successfully"}
