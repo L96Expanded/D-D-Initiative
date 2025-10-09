@@ -208,13 +208,13 @@ async def add_creature_to_encounter(
         Encounter.id == encounter_id,
         Encounter.user_id == current_user.id
     ).first()
-    
+
     if not encounter:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Encounter not found"
         )
-    
+
     db_creature = Creature(
         encounter_id=encounter_id,
         name=creature_data.name,
@@ -222,11 +222,11 @@ async def add_creature_to_encounter(
         creature_type=creature_data.creature_type,
         image_url=creature_data.image_url
     )
-    
+
     db.add(db_creature)
     db.commit()
     db.refresh(db_creature)
-    
+
     return CreatureResponse.model_validate(db_creature)
 
 @router.put("/{encounter_id}/creatures/{creature_id}", response_model=CreatureResponse)

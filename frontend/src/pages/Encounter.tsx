@@ -1,8 +1,9 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { encountersAPI, creaturesAPI, uploadAPI } from '../utils/api';
+import { encountersAPI, creaturesAPI } from '../utils/api';
 import type { Encounter, Creature, CreateCreature, CreatureType } from '../types';
+import CreatureModal from '../components/CreatureModal';
 import './Encounter.css';
 
 interface InitiativeType {
@@ -12,13 +13,6 @@ interface InitiativeType {
   creature_type: CreatureType;
   image_url?: string;
 }
-
-const typeColors = {
-  player: "bg-blue-500",
-  enemy: "bg-red-700",
-  ally: "bg-green-600",
-  other: "bg-yellow-400",
-} as const;
 
 const typeLabels = {
   player: "Player",
@@ -38,73 +32,14 @@ const Encounter: React.FC = () => {
   const [currentRound, setCurrentRound] = useState(1);
   const [showCreatureModal, setShowCreatureModal] = useState(false);
   const [editCreature, setEditCreature] = useState<Creature | null>(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    initiative: 0,
-    creature_type: 'enemy' as CreatureType
-  });
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const [fade, setFade] = useState(false);
 
-  
-// Reset form when modal opens/closes
-  useEffect(() => {
-    if (showCreatureModal) {
-      if (editCreature) {
-        setFormData({
-          name: editCreature.name,
-          initiative: editCreature.initiative,
-          creature_type: editCreature.creature_type
-        });
-        setImageFile(null); 
-// Clear file input when editing
-      } else {
-        setFormData({
-          name: '',
-          initiative: 0,
-          creature_type: 'enemy'
-        });
-        setImageFile(null);
-      }
-    }
-  }, [showCreatureModal, editCreature]);
-
-  const handleFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name.trim()) {
-      alert('Creature name is required');
-      return;
-    }
-    
-    let imageUrl = undefined;
-    
-    
-// If a file was uploaded, upload it first and get the URL
-    if (imageFile) {
-      try {
-        const uploadResult = await uploadAPI.uploadImage(imageFile);
-        imageUrl = uploadResult.url;
-      } catch (error) {
-        console.error('Failed to upload image:', error);
-        alert('Failed to upload image. The creature will be created without an image.');
-        imageUrl = undefined; 
-// Use default image if upload fails
-      }
-    }
-    
-    const submitData: CreateCreature = {
-      name: formData.name,
-      initiative: formData.initiative,
-      creature_type: formData.creature_type,
-      image_url: imageUrl || undefined
-    };
-
+  const handleCreatureSubmit = async (data: CreateCreature) => {
     if (editCreature) {
-      await handleEditCreature(submitData);
+      await handleEditCreature(data);
     } else {
-      await handleAddCreature(submitData);
+      await handleAddCreature(data);
     }
-    
     setShowCreatureModal(false);
     setEditCreature(null);
   };
@@ -208,6 +143,12 @@ const Encounter: React.FC = () => {
     if (imageUrl.startsWith('http')) {
       // External URL
       return imageUrl;
+    } else if (imageUrl.startsWith('/database_images/')) {
+      // Database image
+      return `http://localhost:8000${imageUrl}`;
+    } else if (imageUrl.startsWith('database_images/')) {
+      // Database image without leading slash
+      return `http://localhost:8000/${imageUrl}`;
     } else if (imageUrl.startsWith('/uploads/')) {
       // Backend upload URL - construct full URL
       return `http://localhost:8000${imageUrl}`;
@@ -381,8 +322,17 @@ const Encounter: React.FC = () => {
           {sorted.map((creature) => (
             <div
               key={creature.id}
-              className={`initiative-item ${typeColors[creature.creature_type]} 
+              className={`initiative-item bg-black} 
                 ${creature.id === currentInitiative?.id ? 'current' : ''}`}
+
+                onClick={() => {
+                  const originalCreature = encounter?.creatures.find(c => c.id === creature.id);
+                    if (originalCreature) {
+                      setEditCreature(originalCreature);
+                      setShowCreatureModal(true);
+                    }
+                  }
+                }
             >
               <span className="initiative-number">
                 {creature.initiative}
@@ -395,20 +345,6 @@ const Encounter: React.FC = () => {
               </span>
               {/* Action buttons */}
               <div className="flex gap-1 ml-auto">
-                <button 
-                  onClick={() => {
-                    
-// Find the original creature object for editing
-                    const originalCreature = encounter?.creatures.find(c => c.id === creature.id);
-                    if (originalCreature) {
-                      setEditCreature(originalCreature);
-                      setShowCreatureModal(true);
-                    }
-                  }}
-                  className="bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-white text-xs"
-                >
-                  Edit
-                </button>
                 <button 
                   onClick={() => handleDeleteCreature(creature.id)}
                   className="bg-red-600 hover:bg-red-700 px-2 py-1 rounded text-white text-xs"
@@ -440,178 +376,21 @@ const Encounter: React.FC = () => {
         </div>
       </div>
 
-      {/* Simple Direct Modal Implementation */}
-      {showCreatureModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 10000
-        }}>
-          <div style={{
-            backgroundColor: '#1f2937',
-            padding: '2rem',
-            borderRadius: '0.75rem',
-            border: '1px solid #374151',
-            maxWidth: '32rem',
-            width: '90vw',
-            color: 'white',
-            position: 'relative'
-          }}>
-            <button
-              onClick={() => {
-                setShowCreatureModal(false);
-                setEditCreature(null);
-              }}
-              style={{
-                position: 'absolute',
-                top: '1rem',
-                right: '1rem',
-                background: 'none',
-                border: 'none',
-                color: '#9ca3af',
-                fontSize: '1.5rem',
-                cursor: 'pointer'
-              }}
-            >
-              ×
-            </button>
-            
-            <h3 style={{ marginBottom: '1.5rem', textAlign: 'center', fontSize: '1.25rem', fontWeight: 'bold' }}>
-              {editCreature ? 'Edit Creature' : 'Add Creature'}
-            </h3>
-            
-            <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem' }}>Name</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem',
-                    borderRadius: '0.375rem',
-                    border: '1px solid #374151',
-                    backgroundColor: '#374151',
-                    color: 'white'
-                  }}
-                  required
-                />
-              </div>
-              
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem' }}>Initiative</label>
-                <input
-                  type="number"
-                  value={formData.initiative}
-                  onChange={e => setFormData(prev => ({ ...prev, initiative: Number(e.target.value) }))}
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem',
-                    borderRadius: '0.375rem',
-                    border: '1px solid #374151',
-                    backgroundColor: '#374151',
-                    color: 'white'
-                  }}
-                  min="0"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem' }}>Type</label>
-                <select
-                  value={formData.creature_type}
-                  onChange={e => setFormData(prev => ({ ...prev, creature_type: e.target.value as CreatureType }))}
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem',
-                    borderRadius: '0.375rem',
-                    border: '1px solid #374151',
-                    backgroundColor: '#374151',
-                    color: 'white'
-                  }}
-                >
-                  <option value="player">Player</option>
-                  <option value="enemy">Enemy</option>
-                  <option value="ally">Ally</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem' }}>Image</label>
-                <div style={{ marginBottom: '0.5rem' }}>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={e => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        setImageFile(file);
-                      }
-                    }}
-                    style={{
-                      width: '100%',
-                      padding: '0.5rem',
-                      borderRadius: '0.375rem',
-                      border: '1px solid #374151',
-                      backgroundColor: '#374151',
-                      color: 'white'
-                    }}
-                  />
-                </div>
-              </div>
-              
-              {/* Image Preview */}
-              {imageFile && (
-                <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-                  <label style={{ display: 'block', marginBottom: '0.5rem' }}>Preview</label>
-                  <img
-                    src={URL.createObjectURL(imageFile)}
-                    alt="Preview"
-                    style={{
-                      maxWidth: '100px',
-                      maxHeight: '100px',
-                      objectFit: 'cover',
-                      borderRadius: '0.375rem',
-                      border: '1px solid #374151'
-                    }}
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                    }}
-                  />
-                </div>
-              )}
-              
-              <button
-                type="submit"
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  borderRadius: '0.375rem',
-                  border: 'none',
-                  backgroundColor: '#059669',
-                  color: 'white',
-                  fontSize: '1rem',
-                  fontWeight: 'bold',
-                  cursor: 'pointer',
-                  marginTop: '1rem'
-                }}
-              >
-                {editCreature ? 'Save Changes' : 'Add Creature'}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Creature Modal */}
+      <CreatureModal
+        isOpen={showCreatureModal}
+        onClose={() => {
+          setShowCreatureModal(false);
+          setEditCreature(null);
+        }}
+        onSubmit={handleCreatureSubmit}
+        initialData={editCreature ? {
+          name: editCreature.name,
+          initiative: editCreature.initiative,
+          creature_type: editCreature.creature_type,
+          image_url: editCreature.image_url
+        } : null}
+      />
     </div>
   );
 };

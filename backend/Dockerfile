@@ -13,11 +13,15 @@ RUN apt-get update && apt-get install -y \
 RUN pip install --upgrade bcrypt==4.0.1
 
 # Copy requirements first for better caching
-COPY requirements.txt .
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY . .
+# Copy database and images first (these change less frequently)
+COPY creature_database.json .
+COPY database-images/ ./database_images/
+
+# Copy application code (changes more frequently, so do this last for better caching)
+COPY backend/ .
 
 # Create uploads directory
 RUN mkdir -p /app/uploads

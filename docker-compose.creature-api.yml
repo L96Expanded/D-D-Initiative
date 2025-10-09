@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  dnd-creature-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.creature-api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persistent database storage
+      - dnd_database:/app/data
+      # Persistent uploaded images
+      - dnd_uploads:/app/uploads
+      # Mount your local creature images directory
+      - ./local_creature_images:/app/local_images:ro
+    environment:
+      - DATABASE_URL=sqlite:///./data/dnd_initiative.db
+      - UPLOAD_DIR=/app/uploads
+      - LOCAL_IMAGES_DIR=/app/local_images
+    restart: unless-stopped
+    container_name: dnd-creature-api
+
+volumes:
+  dnd_database:
+    driver: local
+  dnd_uploads:
+    driver: local

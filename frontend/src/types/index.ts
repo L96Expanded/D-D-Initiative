@@ -78,6 +78,40 @@ export interface UpdateEncounter {
   background_image?: string;
 }
 
+// Preset types - for reusable encounter templates
+export interface Preset {
+  id: string;
+  user_id: string;
+  name: string;
+  description?: string;
+  background_image?: string;
+  created_at: string;
+  updated_at: string;
+  creatures: CreateCreature[];
+}
+
+export interface PresetSummary {
+  id: string;
+  name: string;
+  description?: string;
+  background_image?: string;
+  created_at: string;
+  creature_count: number;
+}
+
+export interface CreatePreset {
+  name: string;
+  description?: string;
+  background_image?: string;
+  creatures: CreateCreature[];
+}
+
+export interface UpdatePreset {
+  name?: string;
+  description?: string;
+  background_image?: string;
+}
+
 export interface FileUpload {
   filename: string;
   url: string;

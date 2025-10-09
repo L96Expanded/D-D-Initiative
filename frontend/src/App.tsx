@@ -5,6 +5,8 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Home from './pages/Home';
 import Encounter from './pages/Encounter';
+import EncounterControl from './components/EncounterControl';
+import EncounterDisplayPage from './pages/EncounterDisplayPage';
 
 // Protected Route Component
 interface ProtectedRouteProps {
@@ -83,6 +85,32 @@ const App: React.FC = () => {
             />
             <Route
               path="/encounter/:id"
+              element={
+                <ProtectedRoute>
+                  <EncounterControl />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/encounter-display/:id"
+              element={
+                <ProtectedRoute>
+                  <EncounterDisplayPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/encounters"
+              element={
+                <ProtectedRoute>
+                  <Home />
+                </ProtectedRoute>
+              }
+            />
+            
+            {/* Legacy route for backward compatibility */}
+            <Route
+              path="/encounter-legacy/:id"
               element={
                 <ProtectedRoute>
                   <Encounter />

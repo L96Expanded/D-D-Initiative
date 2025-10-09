@@ -92,6 +92,26 @@ const EncounterModal: React.FC<EncounterModalProps> = ({ isOpen, onClose, onSubm
               console.warn(`Failed to upload image for ${init.name}:`, error);
               // Continue without image rather than failing entirely
             }
+          } else if (init.name && init.name.trim() !== '') {
+            // Auto-fetch image from creature database if no file uploaded
+            try {
+              console.log('Fetching image for creature:', init.name);
+              const response = await fetch(`http://localhost:8000/api/creature-images/get_creature_image?name=${encodeURIComponent(init.name)}&creature_type=${init.creature_type}`);
+              console.log('API response status:', response.status);
+              
+              if (response.ok) {
+                const data = await response.json();
+                console.log('API response data:', data);
+                if (data.image_url) {
+                  // Store the relative path as returned by the API
+                  imageUrl = data.image_url;
+                }
+              } else {
+                console.log('API response not ok:', response.status, response.statusText);
+              }
+            } catch (error) {
+              console.error('Failed to fetch creature image:', error);
+            }
           }
 
           return {

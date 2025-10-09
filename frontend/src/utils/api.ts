@@ -11,6 +11,10 @@ import type {
   Creature,
   CreateCreature,
   UpdateCreature,
+  Preset,
+  PresetSummary,
+  CreatePreset,
+  UpdatePreset,
   FileUpload
 } from '../types';
 
@@ -109,6 +113,33 @@ export const encountersAPI = {
   addCreature: async (encounterId: string, data: CreateCreature): Promise<Creature> => {
     const response = await api.post<Creature>(`/encounters/${encounterId}/creatures`, data);
     return response.data;
+  },
+};
+
+// Presets API
+export const presetsAPI = {
+  getAll: async (): Promise<PresetSummary[]> => {
+    const response = await api.get<PresetSummary[]>('/presets');
+    return response.data;
+  },
+
+  getById: async (id: string): Promise<Preset> => {
+    const response = await api.get<Preset>(`/presets/${id}`);
+    return response.data;
+  },
+
+  create: async (data: CreatePreset): Promise<Preset> => {
+    const response = await api.post<Preset>('/presets', data);
+    return response.data;
+  },
+
+  update: async (id: string, data: UpdatePreset): Promise<Preset> => {
+    const response = await api.put<Preset>(`/presets/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id: string): Promise<void> => {
+    await api.delete(`/presets/${id}`);
   },
 };
 

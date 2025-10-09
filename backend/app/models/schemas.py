@@ -78,6 +78,36 @@ class EncounterSummary(EncounterBase):
     
     model_config = ConfigDict(from_attributes=True)
 
+# Preset Schemas
+class PresetBase(BaseModel):
+    name: str = Field(..., min_length=1, max_length=255)
+    description: Optional[str] = None
+    background_image: Optional[str] = None
+
+class PresetCreate(PresetBase):
+    creatures: List[CreatureCreate] = []
+
+class PresetUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=1, max_length=255)
+    description: Optional[str] = None
+    background_image: Optional[str] = None
+
+class PresetResponse(PresetBase):
+    id: uuid.UUID
+    user_id: uuid.UUID
+    created_at: datetime
+    updated_at: datetime
+    creatures: List[CreatureCreate] = []  # Using CreatureCreate since presets store templates
+    
+    model_config = ConfigDict(from_attributes=True)
+
+class PresetSummary(PresetBase):
+    id: uuid.UUID
+    created_at: datetime
+    creature_count: int
+    
+    model_config = ConfigDict(from_attributes=True)
+
 # File Upload Schemas
 class FileUpload(BaseModel):
     filename: str

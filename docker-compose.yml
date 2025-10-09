@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:15
@@ -23,8 +21,8 @@ services:
 
   backend:
     build: 
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
     container_name: dnd_backend
     environment:
       DATABASE_URL: postgresql://dnd_user:secure_password@postgres:5432/dnd_tracker
@@ -32,6 +30,7 @@ services:
       JWT_ALGORITHM: HS256
       JWT_EXPIRATION_HOURS: 24
       UPLOAD_DIR: /app/uploads
+      DATABASE_IMAGES_DIR: /app/database_images
     depends_on:
       postgres:
         condition: service_healthy
@@ -39,7 +38,9 @@ services:
       - "8000:8000"
     volumes:
       - ./uploads:/app/uploads
-      - ./backend:/app
+      # Removed the backend code volume mount to use the built image files
+      # For development, you can uncomment the next line but it will override database_images
+      # - ./backend:/app
     networks:
       - dnd_network
     restart: unless-stopped

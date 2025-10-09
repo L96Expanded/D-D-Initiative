@@ -2,13 +2,28 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { encountersAPI } from '../utils/api';
-import type { EncounterSummary, CreateEncounter, Encounter, UpdateEncounter, CreateCreature } from '../types';
+import { encountersAPI, presetsAPI } from '../utils/api';
+import type { 
+  EncounterSummary, 
+  CreateEncounter, 
+  Encounter, 
+  UpdateEncounter, 
+  CreateCreature,
+  PresetSummary,
+  CreatePreset,
+  Preset,
+  UpdatePreset
+} from '../types';
 import EncounterModal from '../components/EncounterModal';
 import EditEncounterModal from '../components/EditEncounterModal';
+import PresetModal from '../components/PresetModal';
+import EditPresetModal from '../components/EditPresetModal';
+import UsePresetModal from '../components/UsePresetModal';
 
 const Home: React.FC = () => {
   const { user, logout } = useAuth();
+  
+  // Encounters state
   const [encounters, setEncounters] = useState<EncounterSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,24 +32,41 @@ const Home: React.FC = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingEncounter, setEditingEncounter] = useState<Encounter | null>(null);
 
+  // Presets state
+  const [presets, setPresets] = useState<PresetSummary[]>([]);
+  const [presetSearch, setPresetSearch] = useState('');
+  const [showCreatePresetModal, setShowCreatePresetModal] = useState(false);
+  const [showEditPresetModal, setShowEditPresetModal] = useState(false);
+  const [showUsePresetModal, setShowUsePresetModal] = useState(false);
+  const [editingPreset, setEditingPreset] = useState<Preset | null>(null);
+  const [usingPreset, setUsingPreset] = useState<Preset | null>(null);
+
   useEffect(() => {
-    const fetchEncounters = async () => {
+    const fetchData = async () => {
       setLoading(true);
       setError(null);
       try {
-        const data = await encountersAPI.getAll();
-        setEncounters(data);
+        const [encountersData, presetsData] = await Promise.all([
+          encountersAPI.getAll(),
+          presetsAPI.getAll()
+        ]);
+        setEncounters(encountersData);
+        setPresets(presetsData);
       } catch (err: any) {
-        setError(err?.response?.data?.detail || 'Failed to load encounters');
+        setError(err?.response?.data?.detail || 'Failed to load data');
       } finally {
         setLoading(false);
       }
     };
-    fetchEncounters();
+    fetchData();
   }, []);
 
   const filteredEncounters = encounters.filter(e =>
-  (e as EncounterSummary).name.toLowerCase().includes(search.toLowerCase())
+    (e as EncounterSummary).name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const filteredPresets = presets.filter(p =>
+    (p as PresetSummary).name.toLowerCase().includes(presetSearch.toLowerCase())
   );
 
   const handleCreate = () => {
@@ -130,6 +162,135 @@ const Home: React.FC = () => {
     }
   };
 
+  // Preset handlers
+  const handleCreatePreset = () => {
+    setShowCreatePresetModal(true);
+  };
+
+  const handleCreatePresetSubmit = async (data: CreatePreset) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const newPreset = await presetsAPI.create(data);
+      const summary: PresetSummary = {
+        id: newPreset.id,
+        name: newPreset.name,
+        description: newPreset.description,
+        background_image: newPreset.background_image,
+        created_at: newPreset.created_at,
+        creature_count: newPreset.creatures ? newPreset.creatures.length : 0,
+      };
+      setPresets(prev => [...prev, summary]);
+      setShowCreatePresetModal(false);
+    } catch (err: any) {
+      setError(err?.response?.data?.detail || 'Failed to create preset');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditPreset = async (id: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const preset = await presetsAPI.getById(id);
+      setEditingPreset(preset);
+      setShowEditPresetModal(true);
+    } catch (err: any) {
+      setError(err?.response?.data?.detail || 'Failed to load preset for editing');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditPresetSubmit = async (id: string, updateData: UpdatePreset, creatures: CreateCreature[]) => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Update preset basic info
+      await presetsAPI.update(id, updateData);
+      
+      // For creatures, we need to recreate the preset (similar to encounters)
+      const currentPreset = await presetsAPI.getById(id);
+      await presetsAPI.delete(id);
+      
+      const newPresetData = {
+        name: updateData.name || currentPreset.name,
+        description: updateData.description || currentPreset.description,
+        background_image: updateData.background_image || currentPreset.background_image,
+        creatures: creatures
+      };
+      
+      const newPreset = await presetsAPI.create(newPresetData);
+      
+      setPresets(prev => prev.map(preset => 
+        preset.id === id 
+          ? { 
+              ...preset, 
+              id: newPreset.id,
+              name: newPreset.name,
+              description: newPreset.description,
+              background_image: newPreset.background_image,
+              creature_count: newPreset.creatures ? newPreset.creatures.length : 0
+            }
+          : preset
+      ));
+      
+      setShowEditPresetModal(false);
+      setEditingPreset(null);
+    } catch (err: any) {
+      setError(err?.response?.data?.detail || 'Failed to update preset');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeletePreset = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this preset?')) return;
+    try {
+      await presetsAPI.delete(id);
+      setPresets(presets => presets.filter(p => p.id !== id));
+    } catch (err: any) {
+      setError(err?.response?.data?.detail || 'Failed to delete preset');
+    }
+  };
+
+  const handleUsePreset = async (id: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const preset = await presetsAPI.getById(id);
+      setUsingPreset(preset);
+      setShowUsePresetModal(true);
+    } catch (err: any) {
+      setError(err?.response?.data?.detail || 'Failed to load preset');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUsePresetSubmit = async (data: CreateEncounter) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const newEncounter = await encountersAPI.create(data);
+      const summary: EncounterSummary = {
+        id: newEncounter.id,
+        name: newEncounter.name,
+        background_image: newEncounter.background_image,
+        created_at: newEncounter.created_at,
+        creature_count: newEncounter.creatures ? newEncounter.creatures.length : 0,
+      };
+      setEncounters(prev => [...prev, summary]);
+      setShowUsePresetModal(false);
+      setUsingPreset(null);
+    } catch (err: any) {
+      setError(err?.response?.data?.detail || 'Failed to create encounter from preset');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen p-4">
       <div className="container mx-auto max-w-3xl">
@@ -172,7 +333,7 @@ const Home: React.FC = () => {
             ) : (
               <ul className="space-y-4">
                 {filteredEncounters.map(encounter => (
-                  <li key={encounter.id} className="glass-heavy p-4 flex items-center justify-between gap-4">
+                  <li key={encounter.id} className="glass-heavy p-2 flex items-center justify-between mt-4 gap-4">
                     <div className="flex items-center gap-4 flex-1 ">
                       <h3 className="text-lg font-bold">{encounter.name}</h3>
                       <p className="text-gray-400 text-sm">Created: {new Date(encounter.created_at).toLocaleDateString()}</p>
@@ -187,6 +348,62 @@ const Home: React.FC = () => {
                       <a href={`/encounter/${encounter.id}`} className="btn btn-success">
                         Open
                       </a>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* Presets Section */}
+          <div className="glass p-8 mt-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+              <h2 className="text-xl font-semibold">Your Presets</h2>
+              <div className="flex gap-2 items-center">
+                <input
+                  type="text"
+                  className="px-4 py-2 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none focus:ring focus:ring-blue-500"
+                  placeholder="Search presets..."
+                  value={presetSearch}
+                  onChange={e => setPresetSearch(e.target.value)}
+                />
+                <button className="btn btn-primary" style={{ marginLeft: '30px' }} onClick={handleCreatePreset}>
+                  Create New Preset
+                </button>
+              </div>
+            </div>
+
+            {loading ? (
+              <div className="text-center py-8">Loading presets...</div>
+            ) : error ? (
+              <div className="text-center text-red-400 py-8">{error}</div>
+            ) : filteredPresets.length === 0 ? (
+              <div className="text-center py-8 text-gray-300">No presets found. Create your first preset!</div>
+            ) : (
+              <ul className="space-y-4">
+                {filteredPresets.map(preset => (
+                  <li key={preset.id} className="glass-heavy p-2 flex items-center justify-between mt-4 gap-4">
+                    <div className="flex items-center gap-4 flex-1">
+                      <div>
+                        <h3 className="text-lg font-bold">{preset.name}</h3>
+                        {preset.description && (
+                          <p className="text-gray-400 text-sm">{preset.description}</p>
+                        )}
+                        <p className="text-gray-400 text-xs">
+                          Created: {new Date(preset.created_at).toLocaleDateString()} • {preset.creature_count} creature{preset.creature_count !== 1 ? 's' : ''}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button className="btn btn-success" style={{ marginRight: '15px' }} onClick={() => handleUsePreset(preset.id)}>
+                        Use
+                      </button>
+                      <button className="btn btn-secondary" style={{ marginRight: '15px' }} onClick={() => handleEditPreset(preset.id)}>
+                        Edit
+                      </button>
+                      <button className="btn btn-danger" onClick={() => handleDeletePreset(preset.id)}>
+                        Delete
+                      </button>
                     </div>
                   </li>
                 ))}
@@ -219,6 +436,41 @@ const Home: React.FC = () => {
             onSubmit={handleEditSubmit}
             encounterId={editingEncounter.id}
             initialData={editingEncounter}
+          />
+        )}
+
+        {/* Create Preset Modal */}
+        {showCreatePresetModal && (
+          <PresetModal
+            isOpen={showCreatePresetModal}
+            onClose={() => setShowCreatePresetModal(false)}
+            onSubmit={handleCreatePresetSubmit}
+          />
+        )}
+
+        {/* Edit Preset Modal */}
+        {showEditPresetModal && editingPreset && (
+          <EditPresetModal
+            isOpen={showEditPresetModal}
+            preset={editingPreset}
+            onClose={() => {
+              setShowEditPresetModal(false);
+              setEditingPreset(null);
+            }}
+            onSubmit={handleEditPresetSubmit}
+          />
+        )}
+
+        {/* Use Preset Modal */}
+        {showUsePresetModal && usingPreset && (
+          <UsePresetModal
+            isOpen={showUsePresetModal}
+            preset={usingPreset}
+            onClose={() => {
+              setShowUsePresetModal(false);
+              setUsingPreset(null);
+            }}
+            onSubmit={handleUsePresetSubmit}
           />
         )}
       </div>
