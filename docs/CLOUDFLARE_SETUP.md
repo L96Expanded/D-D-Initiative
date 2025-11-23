@@ -1,22 +1,40 @@
 # Cloudflare Setup Guide for karsusinitiative.com
 
-## ⚠️ CRITICAL: Dashboard Configuration Required
+## ⚠️ CRITICAL: Tunnel Migration & Configuration Required
 
-**Your tunnel is running but NOT linked to the domain!**
+**Your tunnel needs to be migrated to dashboard management and linked to your domain!**
 
-### Quick Fix (5 minutes)
+### Step 1: Migrate Tunnel (1 minute)
 
 1. **Go to:** https://one.dash.cloudflare.com/
 2. **Navigate:** Zero Trust → Networks → Tunnels
 3. **Find tunnel:** `80cf609e-e89a-47c4-a759-315191f4e841`
-4. **Click:** Configure → Public Hostname tab
-5. **Add public hostname:**
+4. **Click:** "Migrate" button (if prompted)
+   - ✅ This is SAFE - no downtime
+   - ✅ Enables dashboard management
+   - ⚠️ Migration is irreversible
+5. **Wait:** ~30 seconds for migration to complete
+
+### Step 2: Add Public Hostname (2 minutes)
+
+After migration completes:
+
+1. **Click:** Configure → Public Hostname tab
+2. **Click:** "Add a public hostname"
+3. **Fill in:**
    - Subdomain: *(leave empty)*
    - Domain: `karsusinitiative.com`
    - Service Type: `HTTP`
    - URL: `127.0.0.1:80`
-6. **Save** and wait 30-60 seconds
-7. **Test:** https://karsusinitiative.com
+4. **Save** and wait 30-60 seconds
+5. **Test:** https://karsusinitiative.com
+
+### Why Migrate?
+
+- ✅ Manage hostnames from web dashboard
+- ✅ No tunnel restart needed for changes
+- ✅ Modern, recommended approach
+- ✅ Visual interface for configuration
 
 ---
 
