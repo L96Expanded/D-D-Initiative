@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { uploadAPI } from '../utils/api';
+import { uploadAPI, getApiBaseUrl } from '../utils/api';
 import type { CreateEncounter, EncounterSummary, CreateCreature, CreatureType } from '../types';
 
 interface EncounterModalProps {
@@ -96,7 +96,7 @@ const EncounterModal: React.FC<EncounterModalProps> = ({ isOpen, onClose, onSubm
             // Auto-fetch image from creature database if no file uploaded
             try {
               console.log('Fetching image for creature:', init.name);
-              const response = await fetch(`http://localhost:8000/api/creature-images/get_creature_image?name=${encodeURIComponent(init.name)}&creature_type=${init.creature_type}`);
+              const response = await fetch(`${getApiBaseUrl()}/api/creature-images/get_creature_image?name=${encodeURIComponent(init.name)}&creature_type=${init.creature_type}`);
               console.log('API response status:', response.status);
               
               if (response.ok) {

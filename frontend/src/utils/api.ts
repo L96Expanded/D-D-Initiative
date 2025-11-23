@@ -28,11 +28,15 @@ declare global {
 }
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+// Helper function to get the API base URL for use in components
+export const getApiBaseUrl = () => API_BASE_URL;
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 });
 
 // Request interceptor to add auth token

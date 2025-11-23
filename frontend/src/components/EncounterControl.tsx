@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { encountersAPI, creaturesAPI, uploadAPI } from '../utils/api';
+import { encountersAPI, creaturesAPI, uploadAPI, getApiBaseUrl } from '../utils/api';
 import type { Encounter, Creature, CreateCreature, CreatureType } from '../types';
 
 interface InitiativeType {
@@ -270,7 +270,7 @@ const EncounterControl: React.FC = () => {
       // Auto-fetch image from creature database if no file uploaded
       try {
         console.log('Fetching image for creature:', formData.name);
-        const response = await fetch(`http://localhost:8000/api/creature-images/get_creature_image?name=${encodeURIComponent(formData.name)}&creature_type=${formData.creature_type}`);
+        const response = await fetch(`${getApiBaseUrl()}/api/creature-images/get_creature_image?name=${encodeURIComponent(formData.name)}&creature_type=${formData.creature_type}`);
         console.log('API response status:', response.status);
         
         if (response.ok) {

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { uploadAPI } from '../utils/api';
+import { uploadAPI, getApiBaseUrl } from '../utils/api';
 import type { Preset, CreateEncounter, CreateCreature, CreatureType } from '../types';
 
 interface UsePresetModalProps {
@@ -59,7 +59,7 @@ const UsePresetModal: React.FC<UsePresetModalProps> = ({ isOpen, preset, onClose
       // Auto-fetch image from creature database if no file uploaded
       try {
         console.log('Fetching image for creature:', newCreature.name);
-        const response = await fetch(`http://localhost:8000/api/creature-images/get_creature_image?name=${encodeURIComponent(newCreature.name)}&creature_type=${newCreature.creature_type}`);
+        const response = await fetch(`${getApiBaseUrl()}/api/creature-images/get_creature_image?name=${encodeURIComponent(newCreature.name)}&creature_type=${newCreature.creature_type}`);
         console.log('API response status:', response.status);
         
         if (response.ok) {

@@ -1,13 +1,17 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 import os
+import time
 
 from app.config import settings
 from app.models.database import engine, get_db
 from app.models import models
-from app.routers import auth, users, encounters, creatures, uploads, presets, simple_creature_images
+from app.routers import auth, users, encounters, creatures, uploads, presets, simple_creature_images, health
+from app.utils.metrics import PrometheusMiddleware, router as metrics_router
 
 # Create database tables
 models.Base.metadata.create_all(bind=engine)
@@ -18,14 +22,40 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Security middleware - Add trusted host middleware
+if settings.ENVIRONMENT == "production":
+    app.add_middleware(
+        TrustedHostMiddleware, 
+        allowed_hosts=settings.ALLOWED_HOSTS
+    )
+
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=3600,
 )
+
+# Add Prometheus metrics middleware
+app.add_middleware(PrometheusMiddleware)
+
+# Security headers middleware
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    
+    # Add security headers
+    if settings.ENVIRONMENT == "production":
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    
+    return response
 
 # Mount static files for uploads
 upload_path = settings.UPLOAD_DIR
@@ -40,6 +70,8 @@ if os.path.exists(database_images_path):
     app.mount("/database_images", StaticFiles(directory=database_images_path), name="database_images")
 
 # Include routers
+app.include_router(health.router, tags=["Health"])
+app.include_router(metrics_router, tags=["Metrics"])
 app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 app.include_router(users.router, prefix="/users", tags=["Users"])
 app.include_router(encounters.router, prefix="/encounters", tags=["Encounters"])
@@ -47,6 +79,16 @@ app.include_router(creatures.router, prefix="/creatures", tags=["Creatures"])
 app.include_router(presets.router, prefix="/presets", tags=["Presets"])
 app.include_router(uploads.router, prefix="/upload", tags=["File Upload"])
 app.include_router(simple_creature_images.router, prefix="/api/creature-images", tags=["Creature Images"])
+
+# Debug endpoint to check CORS configuration
+@app.get("/debug/cors")
+async def debug_cors():
+    """Debug endpoint to check CORS configuration."""
+    return {
+        "cors_origins": settings.CORS_ORIGINS,
+        "allowed_hosts": settings.ALLOWED_HOSTS,
+        "environment": settings.ENVIRONMENT
+    }
 
 # Initialize JSON-based creature database
 @app.on_event("startup")
@@ -75,10 +117,6 @@ async def startup_event():
 @app.get("/")
 async def root():
     return {"message": "D&D Initiative Tracker API", "version": "1.0.0"}
-
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy"}
 
 if __name__ == "__main__":
     import uvicorn

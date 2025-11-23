@@ -78,6 +78,15 @@ const EncounterDisplayPage: React.FC = () => {
     };
   }, []);
 
+  // Update window title when encounter data changes
+  useEffect(() => {
+    if (displayData.encounter?.name) {
+      document.title = `${displayData.encounter.name} - D&D Initiative Tracker`;
+    } else {
+      document.title = 'D&D Initiative Tracker - Display';
+    }
+  }, [displayData.encounter?.name]);
+
   const getImageUrl = (imageUrl?: string, creatureType?: CreatureType): string => {
     if (!imageUrl) {
       return `/images/defaults/${creatureType ? creatureType.charAt(0).toUpperCase() + creatureType.slice(1) : 'Other'}.png`;
