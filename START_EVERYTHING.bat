@@ -44,24 +44,8 @@ if %ERRORLEVEL% NEQ 0 (
 )
 echo  Docker is running
 
-REM Check if cloudflared exists
-if not exist "cloudflare-tools\cloudflared.exe" (
-    echo WARNING: cloudflared.exe not found in cloudflare-tools\
-    echo Tunnel will not be available, but local access will work.
-    set TUNNEL_AVAILABLE=false
-) else (
-    echo  Cloudflare tunnel binary found
-    set TUNNEL_AVAILABLE=true
-)
-
-REM Check if tunnel config exists
-if not exist "cloudflare-tools\tunnel-config.yml" (
-    echo WARNING: tunnel-config.yml not found
-    echo Tunnel will not be available, but local access will work.
-    set TUNNEL_AVAILABLE=false
-) else (
-    echo  Tunnel configuration found
-)
+REM Note: Azure deployment handles public access
+echo ✓ Ready for Azure deployment
 
 REM ============================================================================
 echo.
@@ -136,38 +120,13 @@ echo  All services are ready!
 
 REM ============================================================================
 echo.
-echo [4/5] Starting Cloudflare tunnel...
-echo ================================================================================
-
-if "%TUNNEL_AVAILABLE%"=="false" (
-    echo Skipping tunnel setup - required files not found
-    echo You can still access locally at http://localhost
-    goto :skip_tunnel
-)
-
-echo Starting Cloudflare tunnel for worldwide access...
-echo.
-echo ================================================================================
-echo   TUNNEL STARTING - Your D&D tracker will be accessible at:
-echo   
-echo    Frontend: https://karsusinitiative.com
-echo    API: https://api.karsusinitiative.com
-echo    API Docs: https://api.karsusinitiative.com/docs
-echo.
-echo   NOTE: If karsusinitiative.com doesn't work, you may need to configure
-echo         the public hostname in Cloudflare Zero Trust dashboard.
-echo         See docs\CLOUDFLARE_SETUP.md for instructions.
+echo [4/5] Local development ready...
 echo ================================================================================
 echo.
-
-REM Start tunnel (this will run in foreground)
-start "Cloudflare Tunnel" /min cloudflare-tools\cloudflared.exe tunnel --config cloudflare-tools\tunnel-config.yml run
-
-REM Wait for tunnel to establish
-echo Waiting for tunnel to establish (15 seconds)...
-timeout /t 15 /nobreak >nul
-
-:skip_tunnel
+echo   For worldwide access, deploy to Azure using:
+echo   cd azure-infrastructure
+echo   .\deploy.ps1
+echo.
 
 REM ============================================================================
 echo.
@@ -258,10 +217,6 @@ echo.
 pause
 
 REM ============================================================================
-echo.
-echo Shutting down tunnel...
-taskkill /f /im cloudflared.exe >nul 2>&1
-
 echo.
 echo   Would you like to stop the Docker containers too? (Y/N)
 set /p stopContainers="> "

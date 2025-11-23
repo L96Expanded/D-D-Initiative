@@ -48,11 +48,12 @@ Write-Host ""
 
 # Check if Azure CLI is installed
 try {
-    $azVersion = az version --output json | ConvertFrom-Json
-    Write-Host "  ✓ Azure CLI installed: v$($azVersion.'azure-cli')" -ForegroundColor Green
+    $azCheck = Get-Command az -ErrorAction Stop
+    Write-Host "  ✓ Azure CLI installed" -ForegroundColor Green
 } catch {
     Write-Host "  ✗ Azure CLI not installed!" -ForegroundColor Red
     Write-Host "    Install from: https://aka.ms/installazurecliwindows" -ForegroundColor Yellow
+    Write-Host "    After installing, RESTART PowerShell and run this script again" -ForegroundColor Yellow
     exit 1
 }
 

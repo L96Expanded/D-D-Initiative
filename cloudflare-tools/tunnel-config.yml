@@ -1,9 +1,0 @@
-tunnel: 80cf609e-e89a-47c4-a759-315191f4e841
-credentials-file: C:\Users\david\.cloudflared\80cf609e-e89a-47c4-a759-315191f4e841.json
-
-ingress:
-  - hostname: karsusinitiative.com
-    service: http://127.0.0.1:80
-  - hostname: api.karsusinitiative.com  
-    service: http://127.0.0.1:8000
-  - service: http_status:404
