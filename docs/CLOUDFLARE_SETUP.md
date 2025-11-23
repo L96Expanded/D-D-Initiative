@@ -1,5 +1,25 @@
 # Cloudflare Setup Guide for karsusinitiative.com
 
+## ⚠️ CRITICAL: Dashboard Configuration Required
+
+**Your tunnel is running but NOT linked to the domain!**
+
+### Quick Fix (5 minutes)
+
+1. **Go to:** https://one.dash.cloudflare.com/
+2. **Navigate:** Zero Trust → Networks → Tunnels
+3. **Find tunnel:** `80cf609e-e89a-47c4-a759-315191f4e841`
+4. **Click:** Configure → Public Hostname tab
+5. **Add public hostname:**
+   - Subdomain: *(leave empty)*
+   - Domain: `karsusinitiative.com`
+   - Service Type: `HTTP`
+   - URL: `127.0.0.1:80`
+6. **Save** and wait 30-60 seconds
+7. **Test:** https://karsusinitiative.com
+
+---
+
 ## 🌟 Overview
 
 This guide will help you set up your D&D Initiative Tracker with your Cloudflare domain `karsusinitiative.com`. Cloudflare provides better reliability, security, and performance than dynamic DNS.
