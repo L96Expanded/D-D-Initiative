@@ -277,5 +277,5 @@ $outputFile = "azure-deployment-outputs.json"
     deploymentDate = (Get-Date).ToString()
 } | ConvertTo-Json | Out-File -FilePath $outputFile
 
-Write-Host "  💾 Deployment details saved to: $outputFile" -ForegroundColor Green
+Write-Host "  Deployment details saved to: $outputFile" -ForegroundColor Green
 Write-Host ""
