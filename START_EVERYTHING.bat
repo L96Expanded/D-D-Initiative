@@ -6,7 +6,7 @@ REM  This script does EVERYTHING:
 REM  - Builds and starts Docker containers
 REM  - Starts Cloudflare tunnel for worldwide access  
 REM  - Opens the application in browser
-REM  - Provides all access URLs
+REM  - Provides all access URLs and troubleshooting
 REM ============================================================================
 
 title D&D Initiative Tracker - Master Launcher
@@ -19,10 +19,11 @@ echo ===========================================================================
 echo.
 echo   This will start your complete D&D hosting environment:
 echo   
-echo   [1/4] Build and start Docker containers
-echo   [2/4] Start Cloudflare tunnel for worldwide access
-echo   [3/4] Open application in browser
-echo   [4/4] Display all access URLs
+echo   [1/5] Pre-flight checks
+echo   [2/5] Build and start Docker containers
+echo   [3/5] Verify services are running
+echo   [4/5] Start Cloudflare tunnel for worldwide access
+echo   [5/5] Open application and display access URLs
 echo.
 echo   After this completes, your D&D tracker will be accessible worldwide!
 echo.
@@ -30,7 +31,41 @@ pause
 
 REM ============================================================================
 echo.
-echo [1/4] Starting Docker containers...
+echo [1/5] Running pre-flight checks...
+echo ================================================================================
+
+REM Check if Docker is running
+docker info >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo ERROR: Docker is not running!
+    echo Please start Docker Desktop and try again.
+    pause
+    exit /b 1
+)
+echo  Docker is running
+
+REM Check if cloudflared exists
+if not exist "cloudflare-tools\cloudflared.exe" (
+    echo WARNING: cloudflared.exe not found in cloudflare-tools\
+    echo Tunnel will not be available, but local access will work.
+    set TUNNEL_AVAILABLE=false
+) else (
+    echo  Cloudflare tunnel binary found
+    set TUNNEL_AVAILABLE=true
+)
+
+REM Check if tunnel config exists
+if not exist "cloudflare-tools\tunnel-config.yml" (
+    echo WARNING: tunnel-config.yml not found
+    echo Tunnel will not be available, but local access will work.
+    set TUNNEL_AVAILABLE=false
+) else (
+    echo  Tunnel configuration found
+)
+
+REM ============================================================================
+echo.
+echo [2/5] Starting Docker containers...
 echo ================================================================================
 
 REM Stop any existing containers first
@@ -48,21 +83,67 @@ if %ERRORLEVEL% NEQ 0 (
     exit /b 1
 )
 
-echo ✓ Docker containers started successfully!
+echo  Docker containers started successfully!
 
 REM ============================================================================
 echo.
-echo [2/4] Starting Cloudflare tunnel...
+echo [3/5] Verifying services are running...
 echo ================================================================================
 
-REM Wait a moment for containers to fully start
-echo Waiting for containers to initialize...
-timeout /t 10 /nobreak >nul
+:verify_services
+REM Wait for containers to fully start
+echo Waiting for containers to initialize (30 seconds)...
+timeout /t 30 /nobreak >nul
 
-REM Test local services before starting tunnel
-echo Testing local services...
-powershell -Command "try { $response = Invoke-WebRequest -Uri 'http://localhost' -UseBasicParsing -TimeoutSec 5; Write-Host '✓ Frontend ready' } catch { Write-Host '⚠ Frontend starting...' }"
-powershell -Command "try { $response = Invoke-WebRequest -Uri 'http://localhost:8000/health' -UseBasicParsing -TimeoutSec 5; Write-Host '✓ Backend ready' } catch { Write-Host '⚠ Backend starting...' }"
+REM Test local services
+echo.
+echo Testing local services:
+set SERVICES_READY=true
+
+powershell -Command "try { $response = Invoke-WebRequest -Uri 'http://localhost' -UseBasicParsing -TimeoutSec 5; Write-Host '   Frontend ready (localhost)' -ForegroundColor Green } catch { Write-Host '  ❌ Frontend not responding' -ForegroundColor Red; exit 1 }"
+if %ERRORLEVEL% NEQ 0 set SERVICES_READY=false
+
+powershell -Command "try { $response = Invoke-WebRequest -Uri 'http://localhost:8000/api/health' -UseBasicParsing -TimeoutSec 5; Write-Host '   Backend ready (localhost:8000)' -ForegroundColor Green } catch { Write-Host '  ❌ Backend not responding' -ForegroundColor Red; exit 1 }"
+if %ERRORLEVEL% NEQ 0 set SERVICES_READY=false
+
+if "%SERVICES_READY%"=="false" (
+    echo.
+    echo WARNING: Some services are not ready yet
+    echo This might cause issues with the tunnel
+    echo.
+    echo Would you like to:
+    echo   [1] Continue anyway
+    echo   [2] Wait 30 more seconds
+    echo   [3] Exit and check Docker logs
+    set /p choice="> "
+    
+    if "%choice%"=="2" (
+        echo Waiting 30 more seconds...
+        timeout /t 30 /nobreak >nul
+        goto verify_services
+    )
+    if "%choice%"=="3" (
+        echo.
+        echo Run this command to check logs:
+        echo   docker-compose -f docker-compose.prod.yml logs
+        pause
+        exit /b 1
+    )
+)
+
+echo.
+echo  All services are ready!
+
+REM ============================================================================
+echo.
+echo [4/5] Starting Cloudflare tunnel...
+echo ================================================================================
+
+if "%TUNNEL_AVAILABLE%"=="false" (
+    echo Skipping tunnel setup - required files not found
+    echo You can still access locally at http://localhost
+    goto :skip_tunnel
+)
 
 echo Starting Cloudflare tunnel for worldwide access...
 echo.
@@ -73,52 +154,103 @@ echo    Frontend: https://karsusinitiative.com
 echo    API: https://api.karsusinitiative.com
 echo    API Docs: https://api.karsusinitiative.com/docs
 echo.
-echo   Press Ctrl+C to stop the tunnel when you're done gaming!
+echo   NOTE: If karsusinitiative.com doesn't work, you may need to configure
+echo         the public hostname in Cloudflare Zero Trust dashboard.
+echo         See docs\CLOUDFLARE_SETUP.md for instructions.
 echo ================================================================================
 echo.
 
 REM Start tunnel (this will run in foreground)
 start "Cloudflare Tunnel" /min cloudflare-tools\cloudflared.exe tunnel --config cloudflare-tools\tunnel-config.yml run
 
-REM Wait a moment for tunnel to establish
-timeout /t 5 /nobreak >nul
+REM Wait for tunnel to establish
+echo Waiting for tunnel to establish (15 seconds)...
+timeout /t 15 /nobreak >nul
+
+:skip_tunnel
 
 REM ============================================================================
 echo.
-echo [3/4] Opening application in browser...
+echo [5/5] Opening application and displaying URLs...
 echo ================================================================================
+echo.
 
-REM Open the application in default browser
-echo Opening https://karsusinitiative.com in your browser...
-start https://karsusinitiative.com
+REM Test remote access if tunnel is available
+if "%TUNNEL_AVAILABLE%"=="true" (
+    echo Testing remote access...
+    powershell -Command "try { $response = Invoke-WebRequest -Uri 'https://karsusinitiative.com' -UseBasicParsing -TimeoutSec 10; Write-Host '   Remote access working!' -ForegroundColor Green; exit 0 } catch { Write-Host '  ⚠ Remote access not working yet' -ForegroundColor Yellow; Write-Host '  Check Cloudflare dashboard for tunnel configuration' -ForegroundColor Yellow; exit 1 }"
+    set REMOTE_WORKING=%ERRORLEVEL%
+    echo.
+)
+
+REM Open the appropriate URL
+if "%TUNNEL_AVAILABLE%"=="true" (
+    if %REMOTE_WORKING% EQU 0 (
+        echo Opening https://karsusinitiative.com in your browser...
+        start https://karsusinitiative.com
+    ) else (
+        echo Opening http://localhost in your browser...
+        echo (Remote access needs configuration - see troubleshooting below^)
+        start http://localhost
+    )
+) else (
+    echo Opening http://localhost in your browser...
+    start http://localhost
+)
 
 REM ============================================================================
 echo.
-echo [4/4] Setup complete!
+echo ================================================================================
+echo                            SETUP COMPLETE!
 echo ================================================================================
 echo.
-echo     YOUR D&D INITIATIVE TRACKER IS NOW LIVE! 
+echo     YOUR D&D INITIATIVE TRACKER IS NOW RUNNING! 
 echo.
 echo ================================================================================ 
-echo   LOCAL ACCESS (for testing):
+echo   LOCAL ACCESS (always works):
 echo   • Frontend: http://localhost
 echo   • Backend: http://localhost:8000
 echo   • API Docs: http://localhost:8000/docs
+echo   • Health Check: http://localhost:8000/api/health
 echo.
-echo   WORLDWIDE ACCESS (share with players):
-echo   •  Main App: https://karsusinitiative.com
-echo   •  API: https://api.karsusinitiative.com  
-echo   •  API Documentation: https://api.karsusinitiative.com/docs
-echo.
-echo   PLAYER INSTRUCTIONS:
-echo   Tell your players to visit: https://karsusinitiative.com
-echo   They can access your D&D tracker from anywhere in the world!
+
+if "%TUNNEL_AVAILABLE%"=="true" (
+    if %REMOTE_WORKING% EQU 0 (
+        echo   WORLDWIDE ACCESS ( working - share with players^):
+        echo   •  Main App: https://karsusinitiative.com
+        echo   •  API: https://api.karsusinitiative.com  
+        echo   •  API Documentation: https://api.karsusinitiative.com/docs
+        echo.
+        echo   PLAYER INSTRUCTIONS:
+        echo   Tell your players to visit: https://karsusinitiative.com
+        echo   They can access your D&D tracker from anywhere in the world!
+    ) else (
+        echo   WORLDWIDE ACCESS (⚠ needs configuration^):
+        echo   • URL: https://karsusinitiative.com
+        echo   • Status: Tunnel running but hostname not configured
+        echo.
+        echo   TROUBLESHOOTING:
+        echo   1. Go to: https://one.dash.cloudflare.com/
+        echo   2. Navigate: Zero Trust  Networks  Tunnels
+        echo   3. Find tunnel: 80cf609e-e89a-47c4-a759-315191f4e841
+        echo   4. If it says "locally configured", click MIGRATE
+        echo   5. After migration, click Configure  Public Hostname
+        echo   6. Add hostname:
+        echo      - Domain: karsusinitiative.com
+        echo      - Service Type: HTTP
+        echo      - URL: 127.0.0.1:80
+        echo   7. Save and wait 1 minute
+        echo.
+        echo   See docs\CLOUDFLARE_SETUP.md for detailed instructions
+    )
+)
+
 echo.
 echo   MANAGEMENT:
-echo   • Tunnel runs in minimized window
+echo   • Tunnel runs in minimized window (if available^)
 echo   • Close tunnel window to stop worldwide access
 echo   • Docker containers will keep running locally
-echo   • Use 'docker-compose -f docker-compose.prod.yml down' to stop everything
+echo   • Use STOP_EVERYTHING.bat to stop all services
 echo ================================================================================
 echo.
 echo   🐉 Ready for adventure! Press any key when done gaming... ⚔️
@@ -137,12 +269,12 @@ set /p stopContainers="> "
 if /i "%stopContainers%"=="Y" (
     echo Stopping Docker containers...
     docker-compose -f docker-compose.prod.yml down
-    echo ✓ All services stopped
+    echo  All services stopped
 ) else (
-    echo ✓ Tunnel stopped, Docker containers still running locally
+    echo  Tunnel stopped, Docker containers still running locally
     echo   Access locally at: http://localhost
 )
 
 echo.
-echo Thank you for using D&D Initiative Tracker! 🎲
+echo Thank you for using D&D Initiative Tracker! 
 pause

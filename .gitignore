@@ -13,6 +13,11 @@
 .env.production.local
 *.env
 
+# Azure sensitive files
+azure-infrastructure/parameters.json
+azure-deployment-outputs.json
+*.publishsettings
+
 # Cloudflare credentials and configs
 cloudflare-tools/cert.pem
 cloudflare-tools/*.json
