@@ -13,6 +13,10 @@ Pillow==10.1.0
 aiofiles==23.2.0
 email-validator==2.1.0
 
+# Monitoring Dependencies
+prometheus-client==0.19.0
+psutil==5.9.6
+
 # Testing Dependencies
 pytest==7.4.3
 pytest-asyncio==0.21.1
