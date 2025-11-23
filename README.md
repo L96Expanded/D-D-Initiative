@@ -422,14 +422,14 @@ The project includes a comprehensive testing framework with 102 test cases cover
 - **Code Coverage**: **99%** (was 82%)
 
 ### Test Suites
-- ✅ **Authentication Tests**: 28/28 passing (100%)
-- ✅ **Creature Management Tests**: 41/43 passing (95.3%)  
-- ✅ **Encounter Tests**: 24/24 passing (100%)*
-- ✅ **Standalone Creature Tests**: 19/19 passing (100%)
-- ✅ **Upload Tests**: 24/24 passing (100%)
-- ✅ **User Profile Tests**: 15/15 passing (100%)
-- ✅ **Database Tests**: 10/10 passing (100%)
-- 🔄 **7 Tests Skipped**: Initiative management endpoints (planned for future implementation)
+-  **Authentication Tests**: 28/28 passing (100%)
+-  **Creature Management Tests**: 41/43 passing (95.3%)  
+-  **Encounter Tests**: 24/24 passing (100%)*
+-  **Standalone Creature Tests**: 19/19 passing (100%)
+-  **Upload Tests**: 24/24 passing (100%)
+-  **User Profile Tests**: 15/15 passing (100%)
+-  **Database Tests**: 10/10 passing (100%)
+-  **7 Tests Skipped**: Initiative management endpoints (planned for future implementation)
 
 *All currently implemented encounter functionality is fully tested
 
@@ -449,7 +449,3 @@ python -m pytest tests/test_encounters.py -v
 # Generate HTML coverage report
 python -m pytest tests/ --cov=app --cov-report=html:htmlcov
 ```
-
-For detailed testing documentation, see [docs/TESTING.md](docs/TESTING.md).
-
----
