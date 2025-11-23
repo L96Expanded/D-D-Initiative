@@ -69,9 +69,9 @@ echo.
 echo ================================================================================
 echo   TUNNEL STARTING - Your D&D tracker will be accessible at:
 echo   
-echo   🌐 Frontend: https://karsusinitiative.com
-echo   🔧 API: https://api.karsusinitiative.com
-echo   📚 API Docs: https://api.karsusinitiative.com/docs
+echo    Frontend: https://karsusinitiative.com
+echo    API: https://api.karsusinitiative.com
+echo    API Docs: https://api.karsusinitiative.com/docs
 echo.
 echo   Press Ctrl+C to stop the tunnel when you're done gaming!
 echo ================================================================================
@@ -97,7 +97,7 @@ echo.
 echo [4/4] Setup complete!
 echo ================================================================================
 echo.
-echo    🎉 YOUR D&D INITIATIVE TRACKER IS NOW LIVE! 🎉
+echo     YOUR D&D INITIATIVE TRACKER IS NOW LIVE! 
 echo.
 echo ================================================================================ 
 echo   LOCAL ACCESS (for testing):
@@ -106,9 +106,9 @@ echo   • Backend: http://localhost:8000
 echo   • API Docs: http://localhost:8000/docs
 echo.
 echo   WORLDWIDE ACCESS (share with players):
-echo   • 🌐 Main App: https://karsusinitiative.com
-echo   • 🔧 API: https://api.karsusinitiative.com  
-echo   • 📚 API Documentation: https://api.karsusinitiative.com/docs
+echo   •  Main App: https://karsusinitiative.com
+echo   •  API: https://api.karsusinitiative.com  
+echo   •  API Documentation: https://api.karsusinitiative.com/docs
 echo.
 echo   PLAYER INSTRUCTIONS:
 echo   Tell your players to visit: https://karsusinitiative.com
