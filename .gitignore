@@ -266,3 +266,69 @@ docker-compose.override.yml
 # IDE workspace files
 .vscode/settings.json
 .vscode/launch.json
+
+# Test coverage reports
+backend/htmlcov/
+backend/.coverage
+backend/coverage.xml
+backend/.pytest_cache/
+backend/test-results.xml
+
+# Python virtual environments
+backend/.venv/
+backend/venv/
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+frontend/dist/
+frontend/build/
+
+# Docker
+*.log
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+test.db
+
+# Monitoring data
+prometheus-data/
+grafana-data/
+
+# Secret keys and passwords
+azure-infrastructure/azure-config.json
+azure-infrastructure/azure-credentials.json
+azure-infrastructure/app-service-credentials.json
+azure-infrastructure/parameters.json
+azure-deployment-outputs.json
+cloudflare-tools/credentials/
+.cloudflared/

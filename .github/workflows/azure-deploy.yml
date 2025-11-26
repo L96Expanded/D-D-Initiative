@@ -10,9 +10,9 @@ on:
 env:
   PYTHON_VERSION: '3.11'
   NODE_VERSION: '18'
-  AZURE_RESOURCE_GROUP: 'rg-dnd-initiative-prod'
-  AZURE_FRONTEND_APP: 'app-dnd-initiative-frontend-prod'
-  AZURE_BACKEND_APP: 'app-dnd-initiative-backend-prod'
+  AZURE_RESOURCE_GROUP: 'BCSAI2025-DEVOPS-STUDENTS-A'
+  AZURE_APP_SERVICE: 'dnd-initiative-prod'
+  AZURE_APP_SERVICE_PLAN: 'ASP-BCSAI2025DEVOPSSTUDENTSA-8a73'
 
 jobs:
   # ============================================================================
