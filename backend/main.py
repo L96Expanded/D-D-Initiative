@@ -114,25 +114,30 @@ async def startup_event():
     os.makedirs(database_images_dir, exist_ok=True)
     print(f"Database images directory ready: {database_images_dir}")
 
-# Serve frontend static files - mount assets but use catch-all for SPA routing
+# Serve frontend static files if they exist
 static_dir = "./static"
 if os.path.exists(static_dir):
+    from fastapi.responses import FileResponse
+    from fastapi.exceptions import HTTPException
+    from starlette.exceptions import HTTPException as StarletteHTTPException
+    
     # Mount assets directory for static files (js, css, images)
     assets_dir = os.path.join(static_dir, "assets")
     if os.path.exists(assets_dir):
         app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
     
-    # Catch-all route for SPA - serves index.html for all non-API routes
-    from fastapi.responses import FileResponse
+    # Serve index.html for root
+    @app.get("/")
+    async def serve_root():
+        return FileResponse(os.path.join(static_dir, "index.html"))
     
-    @app.get("/{full_path:path}")
-    async def serve_spa(full_path: str):
-        """Serve the React SPA for all non-API routes."""
-        # If requesting a static file that exists, serve it
-        file_path = os.path.join(static_dir, full_path)
-        if os.path.isfile(file_path):
-            return FileResponse(file_path)
-        # Otherwise serve index.html for SPA routing
+    # Catch-all for 404s - serve index.html for SPA routing
+    @app.exception_handler(404)
+    async def custom_404_handler(request, __):
+        # Check if it's an API request
+        if request.url.path.startswith("/api") or request.url.path.startswith("/auth") or request.url.path.startswith("/users") or request.url.path.startswith("/encounters") or request.url.path.startswith("/creatures") or request.url.path.startswith("/presets") or request.url.path.startswith("/upload"):
+            return {"detail": "Not Found"}
+        # For non-API routes, serve index.html for SPA routing
         return FileResponse(os.path.join(static_dir, "index.html"))
     
     print(f"Serving frontend SPA from: {static_dir}")
