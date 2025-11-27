@@ -61,8 +61,11 @@ jobs:
     
     - name: Copy frontend build to backend
       run: |
+        rm -rf backend/static
         mkdir -p backend/static
         cp -r frontend/dist/* backend/static/
+        echo "Static files copied:"
+        ls -la backend/static/
     
     # ========================================
     # Deploy to Azure
@@ -71,6 +74,10 @@ jobs:
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
+    
+    - name: Clean deployment cache
+      run: |
+        az webapp deployment source delete --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group BCSAI2025-DEVOPS-STUDENTS-A || true
     
     - name: Deploy Backend to Azure Web App
       uses: azure/webapps-deploy@v2
@@ -90,7 +97,7 @@ jobs:
             ENVIRONMENT="production" \
             CORS_ORIGINS='["https://karsusinitiative.com","https://dnd-initiative-prod.azurewebsites.net","http://localhost:3000"]' \
             ALLOWED_HOSTS='["karsusinitiative.com","dnd-initiative-prod.azurewebsites.net","localhost"]' \
-            SCM_DO_BUILD_DURING_DEPLOYMENT="true" \
+            SCM_DO_BUILD_DURING_DEPLOYMENT="false" \
             WEBSITE_HTTPLOGGING_RETENTION_DAYS="3"
     
     - name: Restart App Service
