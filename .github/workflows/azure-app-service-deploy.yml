@@ -67,8 +67,8 @@ jobs:
             SECRET_KEY="${{ secrets.SECRET_KEY }}" \
             AZURE_STORAGE_CONNECTION_STRING="${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
             ENVIRONMENT="production" \
-            CORS_ORIGINS='["https://wonderful-stone-035aba410.3.azurestaticapps.net","https://karsusinitiative.com","https://dnd-initiative-prod.azurewebsites.net","http://localhost:3000"]' \
-            ALLOWED_HOSTS='["wonderful-stone-035aba410.3.azurestaticapps.net","karsusinitiative.com","dnd-initiative-prod.azurewebsites.net","localhost"]' \
+            CORS_ORIGINS='["https://wonderful-stone-035aba410.3.azurestaticapps.net","https://karsusinitiative.com","https://dnd-initiative-prod.azurewebsites.net","https://api.karsusinitiative.com","http://localhost:3000"]' \
+            ALLOWED_HOSTS='["wonderful-stone-035aba410.3.azurestaticapps.net","karsusinitiative.com","dnd-initiative-prod.azurewebsites.net","api.karsusinitiative.com","localhost"]' \
             SCM_DO_BUILD_DURING_DEPLOYMENT="false" \
             WEBSITE_HTTPLOGGING_RETENTION_DAYS="3"
     
