@@ -114,39 +114,9 @@ async def startup_event():
     os.makedirs(database_images_dir, exist_ok=True)
     print(f"Database images directory ready: {database_images_dir}")
 
-# Serve frontend static files if they exist
-static_dir = "./static"
-if os.path.exists(static_dir):
-    from fastapi.responses import FileResponse
-    from fastapi.exceptions import HTTPException
-    from starlette.exceptions import HTTPException as StarletteHTTPException
-    
-    # Mount assets directory for static files (js, css, images)
-    assets_dir = os.path.join(static_dir, "assets")
-    if os.path.exists(assets_dir):
-        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
-    
-    # Serve index.html for root
-    @app.get("/")
-    async def serve_root():
-        return FileResponse(os.path.join(static_dir, "index.html"))
-    
-    # Catch-all for 404s - serve index.html for SPA routing
-    @app.exception_handler(404)
-    async def custom_404_handler(request, exc):
-        # Check if it's an API request - return JSON 404
-        path = request.url.path
-        api_prefixes = ("/api", "/auth", "/users", "/encounters", "/creatures", "/presets", "/upload", "/debug")
-        if any(path.startswith(prefix) for prefix in api_prefixes):
-            return JSONResponse(status_code=404, content={"detail": "Not Found"})
-        # For non-API routes, serve index.html for SPA routing
-        return FileResponse(os.path.join(static_dir, "index.html"))
-    
-    print(f"Serving frontend SPA from: {static_dir}")
-else:
-    @app.get("/")
-    async def root():
-        return {"message": "D&D Initiative Tracker API", "version": "1.0.0"}
+@app.get("/")
+async def root():
+    return {"message": "D&D Initiative Tracker API", "version": "1.0.0", "status": "healthy"}
 
 if __name__ == "__main__":
     import uvicorn
