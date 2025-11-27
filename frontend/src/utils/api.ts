@@ -20,6 +20,7 @@ import type {
 
 interface ImportMetaEnv {
   VITE_API_URL?: string;
+  MODE: string;
 }
 declare global {
   interface ImportMeta {
