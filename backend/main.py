@@ -116,7 +116,12 @@ async def startup_event():
 
 @app.get("/")
 async def root():
-    return {"message": "D&D Initiative Tracker API", "version": "1.0.0", "status": "healthy"}
+    return {
+        "message": "D&D Initiative Tracker API", 
+        "version": "1.0.1", 
+        "status": "healthy",
+        "timestamp": time.time()
+    }
 
 if __name__ == "__main__":
     import uvicorn
