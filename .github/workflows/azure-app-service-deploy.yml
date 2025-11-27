@@ -40,34 +40,6 @@ jobs:
         # pytest --maxfail=1 --disable-warnings -q
     
     # ========================================
-    # Frontend Build
-    # ========================================
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-    
-    - name: Install frontend dependencies
-      run: |
-        cd frontend
-        npm install
-    
-    - name: Build frontend
-      run: |
-        cd frontend
-        npm run build
-      env:
-        VITE_API_URL: https://karsusinitiative.com
-    
-    - name: Copy frontend build to backend
-      run: |
-        rm -rf backend/static
-        mkdir -p backend/static
-        cp -r frontend/dist/* backend/static/
-        echo "Static files copied:"
-        ls -la backend/static/
-    
-    # ========================================
     # Deploy to Azure
     # ========================================
     - name: Azure Login
@@ -95,8 +67,8 @@ jobs:
             SECRET_KEY="${{ secrets.SECRET_KEY }}" \
             AZURE_STORAGE_CONNECTION_STRING="${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
             ENVIRONMENT="production" \
-            CORS_ORIGINS='["https://karsusinitiative.com","https://dnd-initiative-prod.azurewebsites.net","http://localhost:3000"]' \
-            ALLOWED_HOSTS='["karsusinitiative.com","dnd-initiative-prod.azurewebsites.net","localhost"]' \
+            CORS_ORIGINS='["https://wonderful-stone-035aba410.3.azurestaticapps.net","https://karsusinitiative.com","https://dnd-initiative-prod.azurewebsites.net","http://localhost:3000"]' \
+            ALLOWED_HOSTS='["wonderful-stone-035aba410.3.azurestaticapps.net","karsusinitiative.com","dnd-initiative-prod.azurewebsites.net","localhost"]' \
             SCM_DO_BUILD_DURING_DEPLOYMENT="false" \
             WEBSITE_HTTPLOGGING_RETENTION_DAYS="3"
     
