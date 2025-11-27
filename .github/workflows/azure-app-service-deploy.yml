@@ -81,6 +81,8 @@ jobs:
             SECRET_KEY="${{ secrets.SECRET_KEY }}" \
             AZURE_STORAGE_CONNECTION_STRING="${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
             ENVIRONMENT="production" \
+            CORS_ORIGINS='["https://karsusinitiative.com","https://dnd-initiative-prod.azurewebsites.net","http://localhost:3000"]' \
+            ALLOWED_HOSTS='["karsusinitiative.com","dnd-initiative-prod.azurewebsites.net","localhost"]' \
             SCM_DO_BUILD_DURING_DEPLOYMENT="true" \
             WEBSITE_HTTPLOGGING_RETENTION_DAYS="3"
     
