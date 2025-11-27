@@ -114,9 +114,15 @@ async def startup_event():
     os.makedirs(database_images_dir, exist_ok=True)
     print(f"Database images directory ready: {database_images_dir}")
 
-@app.get("/")
-async def root():
-    return {"message": "D&D Initiative Tracker API", "version": "1.0.0"}
+# Serve frontend static files (must be last to not override API routes)
+static_dir = "./static"
+if os.path.exists(static_dir):
+    app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")
+    print(f"Serving frontend from: {static_dir}")
+else:
+    @app.get("/")
+    async def root():
+        return {"message": "D&D Initiative Tracker API", "version": "1.0.0"}
 
 if __name__ == "__main__":
     import uvicorn

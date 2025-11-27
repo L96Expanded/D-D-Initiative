@@ -57,6 +57,11 @@ jobs:
         cd frontend
         npm run build
     
+    - name: Copy frontend build to backend
+      run: |
+        New-Item -ItemType Directory -Force -Path backend/static
+        Copy-Item -Path frontend/dist/* -Destination backend/static/ -Recurse -Force
+    
     # ========================================
     # Deploy to Azure
     # ========================================
