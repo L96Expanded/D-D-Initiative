@@ -133,10 +133,12 @@ if os.path.exists(static_dir):
     
     # Catch-all for 404s - serve index.html for SPA routing
     @app.exception_handler(404)
-    async def custom_404_handler(request, __):
-        # Check if it's an API request
-        if request.url.path.startswith("/api") or request.url.path.startswith("/auth") or request.url.path.startswith("/users") or request.url.path.startswith("/encounters") or request.url.path.startswith("/creatures") or request.url.path.startswith("/presets") or request.url.path.startswith("/upload"):
-            return {"detail": "Not Found"}
+    async def custom_404_handler(request, exc):
+        # Check if it's an API request - return JSON 404
+        path = request.url.path
+        api_prefixes = ("/api", "/auth", "/users", "/encounters", "/creatures", "/presets", "/upload", "/debug")
+        if any(path.startswith(prefix) for prefix in api_prefixes):
+            return JSONResponse(status_code=404, content={"detail": "Not Found"})
         # For non-API routes, serve index.html for SPA routing
         return FileResponse(os.path.join(static_dir, "index.html"))
     
