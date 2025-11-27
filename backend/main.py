@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="D&D Initiative Tracker API",
     description="API for managing D&D encounters and initiative tracking",
-    version="1.0.0"
+    version="1.0.1"
 )
 
 # Create database tables - with error handling
