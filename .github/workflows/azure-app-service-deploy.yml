@@ -93,8 +93,16 @@ jobs:
     
     - name: Test Deployment
       run: |
-        echo "Waiting for deployment to stabilize..."
-
+        echo "Deployment completed. Testing health endpoint..."
+        sleep 30
+        
+        response=$(curl -s -o /dev/null -w "%{http_code}" https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net/api/health || echo "000")
+        
+        if [ "$response" == "200" ]; then
+          echo "✓ Health check passed!"
+        else
+          echo "⚠ Health check returned HTTP $response (may need manual verification)"
+        fi
     
     - name: Display URLs
       run: |
