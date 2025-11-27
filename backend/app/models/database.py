@@ -2,9 +2,23 @@ from sqlalchemy import create_engine, MetaData
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from app.config import settings
+import logging
 
-# Create database engine
-engine = create_engine(settings.DATABASE_URL)
+logger = logging.getLogger(__name__)
+
+# Create database engine with error handling
+try:
+    logger.info(f"Connecting to database: {settings.DATABASE_URL[:30]}...")
+    engine = create_engine(
+        settings.DATABASE_URL,
+        pool_pre_ping=True,  # Verify connections before using
+        pool_recycle=3600,   # Recycle connections after 1 hour
+        connect_args={"connect_timeout": 10}
+    )
+    logger.info("Database engine created successfully")
+except Exception as e:
+    logger.error(f"Failed to create database engine: {e}")
+    raise
 
 # Create session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

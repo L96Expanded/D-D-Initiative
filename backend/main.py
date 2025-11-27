@@ -12,15 +12,26 @@ from app.models.database import engine, get_db
 from app.models import models
 from app.routers import auth, users, encounters, creatures, uploads, presets, simple_creature_images, health
 from app.utils.metrics import PrometheusMiddleware, router as metrics_router
+import logging
 
-# Create database tables
-models.Base.metadata.create_all(bind=engine)
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="D&D Initiative Tracker API",
     description="API for managing D&D encounters and initiative tracking",
     version="1.0.0"
 )
+
+# Create database tables - with error handling
+try:
+    logger.info("Creating database tables...")
+    models.Base.metadata.create_all(bind=engine)
+    logger.info("Database tables created successfully")
+except Exception as e:
+    logger.error(f"Failed to create database tables: {e}")
+    logger.warning("Application will start but database operations may fail")
 
 # Security middleware - Add trusted host middleware
 if settings.ENVIRONMENT == "production":
