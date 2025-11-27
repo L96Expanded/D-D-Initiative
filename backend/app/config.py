@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     
     # JWT
     JWT_SECRET: str = "your_jwt_secret_key_change_in_production"
+    SECRET_KEY: str = "your_jwt_secret_key_change_in_production"  # Alias for JWT_SECRET
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRATION_HOURS: int = 24
     
@@ -54,6 +55,12 @@ class Settings(BaseSettings):
                 self.ALLOWED_HOSTS = json.loads(allowed_hosts_env)
             except json.JSONDecodeError:
                 pass  # Keep default if JSON parsing fails
+        
+        # Use SECRET_KEY for JWT_SECRET if provided
+        secret_key_env = os.getenv('SECRET_KEY')
+        if secret_key_env:
+            self.JWT_SECRET = secret_key_env
+            self.SECRET_KEY = secret_key_env
         
         # Auto-enable Azure Storage if connection string is provided
         if self.AZURE_STORAGE_CONNECTION_STRING:
