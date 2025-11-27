@@ -28,9 +28,14 @@ declare global {
 }
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-// Log API URL for debugging
-console.log('🔧 API Base URL:', API_BASE_URL);
-console.log('🔧 Environment:', import.meta.env.MODE);
+// Log API URL for debugging - IMPORTANT: Check this in browser console!
+console.log('='.repeat(60));
+console.log('🔧 API CONFIGURATION');
+console.log('='.repeat(60));
+console.log('API Base URL:', API_BASE_URL);
+console.log('Environment:', import.meta.env.MODE);
+console.log('All Env Vars:', import.meta.env);
+console.log('='.repeat(60));
 
 // Helper function to get the API base URL for use in components
 export const getApiBaseUrl = () => API_BASE_URL;
