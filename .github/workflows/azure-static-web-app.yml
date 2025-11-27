@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'frontend/**'
+      - 'staticwebapp.config.json'
       - '.github/workflows/azure-static-web-app.yml'
   workflow_dispatch:
 
