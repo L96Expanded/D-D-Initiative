@@ -23,7 +23,26 @@ jobs:
           submodules: true
           lfs: false
 
-      - name: Build And Deploy
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Build frontend with API URL
+        working-directory: ./frontend
+        env:
+          VITE_API_URL: https://dnd-initiative-prod.azurewebsites.net
+        run: |
+          echo "Building with VITE_API_URL=$VITE_API_URL"
+          npm run build
+
+      - name: Deploy to Azure Static Web Apps
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
@@ -33,5 +52,4 @@ jobs:
           app_location: "/frontend"
           api_location: ""
           output_location: "dist"
-        env:
-          VITE_API_URL: https://dnd-initiative-prod.azurewebsites.net
+          skip_app_build: true

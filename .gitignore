@@ -21,6 +21,7 @@ azure-infrastructure/azure-config.json
 azure-infrastructure/database-connection.json
 azure-infrastructure/storage-config.json
 azure-deployment-outputs.json
+app-settings.json
 *.publishsettings
 
 # Cloudflare credentials and configs
