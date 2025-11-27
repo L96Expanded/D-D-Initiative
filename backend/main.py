@@ -114,11 +114,28 @@ async def startup_event():
     os.makedirs(database_images_dir, exist_ok=True)
     print(f"Database images directory ready: {database_images_dir}")
 
-# Serve frontend static files (must be last to not override API routes)
+# Serve frontend static files - mount assets but use catch-all for SPA routing
 static_dir = "./static"
 if os.path.exists(static_dir):
-    app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")
-    print(f"Serving frontend from: {static_dir}")
+    # Mount assets directory for static files (js, css, images)
+    assets_dir = os.path.join(static_dir, "assets")
+    if os.path.exists(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+    
+    # Catch-all route for SPA - serves index.html for all non-API routes
+    from fastapi.responses import FileResponse
+    
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str):
+        """Serve the React SPA for all non-API routes."""
+        # If requesting a static file that exists, serve it
+        file_path = os.path.join(static_dir, full_path)
+        if os.path.isfile(file_path):
+            return FileResponse(file_path)
+        # Otherwise serve index.html for SPA routing
+        return FileResponse(os.path.join(static_dir, "index.html"))
+    
+    print(f"Serving frontend SPA from: {static_dir}")
 else:
     @app.get("/")
     async def root():
