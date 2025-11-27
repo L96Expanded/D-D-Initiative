@@ -17,6 +17,11 @@ class Settings(BaseSettings):
     MAX_FILE_SIZE: int = 10485760  # 10MB
     ALLOWED_IMAGE_TYPES: List[str] = ["image/jpeg", "image/png", "image/webp"]
     
+    # Azure Blob Storage (for production)
+    AZURE_STORAGE_CONNECTION_STRING: str = ""
+    AZURE_STORAGE_CONTAINER_NAME: str = "creature-images"
+    USE_AZURE_STORAGE: bool = False  # Auto-enabled if connection string is set
+    
     # CORS - Updated for production
     CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
     
@@ -49,5 +54,9 @@ class Settings(BaseSettings):
                 self.ALLOWED_HOSTS = json.loads(allowed_hosts_env)
             except json.JSONDecodeError:
                 pass  # Keep default if JSON parsing fails
+        
+        # Auto-enable Azure Storage if connection string is provided
+        if self.AZURE_STORAGE_CONNECTION_STRING:
+            self.USE_AZURE_STORAGE = True
 
 settings = Settings()

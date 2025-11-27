@@ -1,19 +1,16 @@
 from fastapi import APIRouter, File, UploadFile, HTTPException, status, Depends
 from fastapi.responses import FileResponse
-import aiofiles
 import os
-import uuid
-from PIL import Image
 from typing import List
 from app.config import settings
 from app.models.schemas import FileUpload, ErrorResponse
 from app.utils.dependencies import get_current_user
 from app.models.models import User
+from app.utils.storage import storage_service
 
 router = APIRouter()
 
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
-MAX_IMAGE_SIZE = (1920, 1080)  # Max width and height
 
 def get_file_extension(filename: str) -> str:
     """Get file extension from filename."""
@@ -29,46 +26,6 @@ def validate_image_file(file: UploadFile) -> bool:
         return False
     
     return True
-
-async def save_image(file: UploadFile, subfolder: str = "") -> str:
-    """Save uploaded image and return the file path."""
-    # Generate unique filename
-    file_extension = get_file_extension(file.filename or "")
-    unique_filename = f"{uuid.uuid4()}{file_extension}"
-    
-    # Create full path
-    upload_dir = os.path.join(settings.UPLOAD_DIR, subfolder) if subfolder else settings.UPLOAD_DIR
-    os.makedirs(upload_dir, exist_ok=True)
-    file_path = os.path.join(upload_dir, unique_filename)
-    
-    # Save file
-    async with aiofiles.open(file_path, "wb") as buffer:
-        content = await file.read()
-        await buffer.write(content)
-    
-    # Optimize image
-    try:
-        with Image.open(file_path) as img:
-            # Convert to RGB if necessary
-            if img.mode in ("RGBA", "P"):
-                img = img.convert("RGB")
-            
-            # Resize if too large
-            if img.size[0] > MAX_IMAGE_SIZE[0] or img.size[1] > MAX_IMAGE_SIZE[1]:
-                img.thumbnail(MAX_IMAGE_SIZE, Image.Resampling.LANCZOS)
-            
-            # Save optimized image
-            img.save(file_path, optimize=True, quality=85)
-    except Exception as e:
-        # If image processing fails, remove the file
-        os.remove(file_path)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid image file: {str(e)}"
-        )
-    
-    # Return relative path for URL
-    return os.path.join(subfolder, unique_filename).replace("\\", "/") if subfolder else unique_filename
 
 @router.post("/images", response_model=FileUpload)
 async def upload_image(
@@ -91,9 +48,11 @@ async def upload_image(
         )
     
     try:
-        # Save the file
-        filename = await save_image(file, "user_uploads")
-        file_url = f"/uploads/{filename}"
+        # Save the file using storage service (Azure or local)
+        file_url = await storage_service.save_image(file, subfolder="user_uploads")
+        
+        # Extract filename from URL for response
+        filename = file_url.split("/")[-1]
         
         return FileUpload(filename=filename, url=file_url)
     
@@ -122,9 +81,14 @@ async def delete_image(
     current_user: User = Depends(get_current_user)
 ):
     """Delete an uploaded image."""
-    file_path = os.path.join(settings.UPLOAD_DIR, "user_uploads", filename)
+    # Construct image URL/path
+    if settings.USE_AZURE_STORAGE:
+        # For Azure, we need the full URL (stored in database)
+        # This endpoint might need updating to accept full URL
+        image_path = filename
+    else:
+        image_path = f"/uploads/user_uploads/{filename}"
     
-    if os.path.exists(file_path):
-        os.remove(file_path)
+    await storage_service.delete_image(image_path)
     
     return {"message": "Image deleted successfully"}

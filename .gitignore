@@ -19,6 +19,7 @@ azure-infrastructure/azure-credentials.json
 azure-infrastructure/app-service-credentials.json
 azure-infrastructure/azure-config.json
 azure-infrastructure/database-connection.json
+azure-infrastructure/storage-config.json
 azure-deployment-outputs.json
 *.publishsettings
 

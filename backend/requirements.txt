@@ -12,6 +12,7 @@ pydantic-settings==2.1.0
 Pillow==10.1.0
 aiofiles==23.2.0
 email-validator==2.1.0
+azure-storage-blob==12.19.0
 
 # Monitoring Dependencies
 prometheus-client==0.19.0
