@@ -79,7 +79,16 @@ jobs:
             DATABASE_URL="${{ secrets.DATABASE_URL }}" \
             SECRET_KEY="${{ secrets.SECRET_KEY }}" \
             AZURE_STORAGE_CONNECTION_STRING="${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
-            ENVIRONMENT="production"
+            ENVIRONMENT="production" \
+            SCM_DO_BUILD_DURING_DEPLOYMENT="true" \
+            WEBSITE_HTTPLOGGING_RETENTION_DAYS="3"
+    
+    - name: Restart App Service
+      run: |
+        echo "Restarting App Service to apply changes..."
+        az webapp restart \
+          --name ${{ env.AZURE_WEBAPP_NAME }} \
+          --resource-group BCSAI2025-DEVOPS-STUDENTS-A
     
     - name: Test Deployment
       run: |
