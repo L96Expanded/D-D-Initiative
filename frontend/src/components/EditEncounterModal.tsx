@@ -239,81 +239,108 @@ const EditEncounterModal: React.FC<EditEncounterModalProps> = ({
           </div>
 
           <div>
-            <h4 className="text-lg font-semibold mb-3">Creatures</h4>
-            {initiatives.map((init, idx) => (
-              <div key={idx} className="mb-3">
-                <div className="initiative-row mb-2">
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder="Name"
-                    value={init.name}
-                    onChange={e => handleInitiativeChange(idx, "name", e.target.value)}
-                    required
-                  />
-                  <input
-                    type="number"
-                    className="form-input"
-                    placeholder="0"
-                    value={init.initiative}
-                    onChange={e => handleInitiativeChange(idx, "initiative", e.target.value)}
-                    required
-                  />
-                  <select
-                    className="form-input"
-                    value={init.creature_type}
-                    onChange={e => handleInitiativeChange(idx, "creature_type", e.target.value)}
-                  >
-                    <option value="player">Player</option>
-                    <option value="enemy">Enemy</option>
-                    <option value="ally">Ally</option>
-                    <option value="other">Other</option>
-                  </select>
-                  <button
-                    type="button"
-                    className="btn btn-danger btn-sm"
-                    onClick={() => handleRemoveInitiative(idx)}
-                    disabled={initiatives.length === 1}
-                    title="Remove creature"
-                  >
-                    -
-                  </button>
-                  {idx === initiatives.length - 1 && (
-                    <button
-                      type="button"
-                      className="btn btn-primary btn-sm"
-                      onClick={handleAddInitiative}
-                      title="Add creature"
-                    >
-                      +
-                    </button>
-                  )}
+            <div className="flex justify-between items-center mb-3">
+              <h4 className="text-lg font-semibold">Creatures</h4>
+              <button
+                type="button"
+                className="btn btn-success btn-sm"
+                onClick={handleAddInitiative}
+                title="Add creature"
+              >
+                + Add Creature
+              </button>
+            </div>
+            <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+              {initiatives.map((init, idx) => (
+                <div key={idx} className="creature-edit-card glass-card p-4 space-y-3">
+                  {/* Creature Info Header */}
+                  <div className="flex justify-between items-start gap-3">
+                    <div className="flex-1 space-y-2">
+                      <div>
+                        <label className="block text-xs text-gray-400 mb-1">Name</label>
+                        <input
+                          type="text"
+                          className="form-input w-full"
+                          placeholder="Creature name"
+                          value={init.name}
+                          onChange={e => handleInitiativeChange(idx, "name", e.target.value)}
+                          required
+                        />
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-xs text-gray-400 mb-1">Initiative</label>
+                          <input
+                            type="number"
+                            className="form-input w-full"
+                            placeholder="0"
+                            value={init.initiative}
+                            onChange={e => handleInitiativeChange(idx, "initiative", e.target.value)}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-400 mb-1">Type</label>
+                          <select
+                            className="form-input w-full"
+                            value={init.creature_type}
+                            onChange={e => handleInitiativeChange(idx, "creature_type", e.target.value)}
+                          >
+                            <option value="player">Player</option>
+                            <option value="enemy">Enemy</option>
+                            <option value="ally">Ally</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Image Preview Column */}
+                    <div className="flex flex-col items-center gap-2">
+                      {(init.image_url || init.image_file) ? (
+                        <img 
+                          src={init.image_file ? URL.createObjectURL(init.image_file) : init.image_url} 
+                          alt={`${init.name} preview`}
+                          className="w-20 h-20 object-cover rounded border-2 border-gray-600"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-20 h-20 bg-gray-800 rounded border-2 border-dashed border-gray-600 flex items-center justify-center">
+                          <span className="text-xs text-gray-500">No Image</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Image Upload Section */}
+                  <div className="pt-2 border-t border-gray-700">
+                    <label className="block text-xs text-gray-400 mb-2">
+                      Creature Image {init.image_url && !init.image_file && <span className="text-green-400">(Using current)</span>}
+                    </label>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="file"
+                        className="form-input text-sm flex-1"
+                        accept="image/*"
+                        onChange={e => e.target.files && handleInitiativeChange(idx, "image_file", e.target.files[0])}
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-danger btn-sm"
+                        onClick={() => handleRemoveInitiative(idx)}
+                        disabled={initiatives.length === 1}
+                        title="Remove creature"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                
-                {/* Compact image upload row */}
-                <div className="flex gap-2 items-center pl-2">
-                  <input
-                    type="file"
-                    className="form-input text-sm"
-                    accept="image/*"
-                    onChange={e => e.target.files && handleInitiativeChange(idx, "image_file", e.target.files[0])}
-                  />
-                  {(init.image_url || init.image_file) && (
-                    <img 
-                      src={init.image_file ? URL.createObjectURL(init.image_file) : init.image_url} 
-                      alt={`${init.name} preview`}
-                      className="w-8 h-8 object-cover rounded border border-gray-500"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  )}
-                  {init.image_url && !init.image_file && (
-                    <span className="text-xs text-gray-400">Current image kept</span>
-                  )}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           {formError && (

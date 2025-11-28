@@ -51,8 +51,16 @@ const PublicRoute: React.FC<PublicRouteProps> = ({ children }: PublicRouteProps)
 };
 
 const App: React.FC = () => {
-  // Load Ko-fi widget on mount
+  // Load Ko-fi widget on mount (except for encounter display page)
   React.useEffect(() => {
+    // Check if current path is encounter-display
+    const isDisplayPage = window.location.pathname.includes('/encounter-display/');
+    
+    // Don't load Ko-fi widget on encounter display page
+    if (isDisplayPage) {
+      return;
+    }
+    
     // Load Ko-fi overlay script
     const script = document.createElement('script');
     script.src = 'https://storage.ko-fi.com/cdn/scripts/overlay-widget.js';

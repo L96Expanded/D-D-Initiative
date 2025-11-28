@@ -42,7 +42,7 @@ const Login: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="glass w-60 max-w-md p-8">
+      <div className="glass auth-container">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2">Welcome Back</h1>
           <p className="text-gray-300">Sign in to your D&D Initiative Tracker</p>
