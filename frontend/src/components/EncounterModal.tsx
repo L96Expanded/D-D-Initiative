@@ -96,7 +96,9 @@ const EncounterModal: React.FC<EncounterModalProps> = ({ isOpen, onClose, onSubm
             // Auto-fetch image from creature database if no file uploaded
             try {
               console.log('Fetching image for creature:', init.name);
-              const response = await fetch(`${getApiBaseUrl()}/api/creature-images/get_creature_image?name=${encodeURIComponent(init.name)}&creature_type=${init.creature_type}`);
+              const response = await fetch(`${getApiBaseUrl()}/api/creature-images/get_creature_image?name=${encodeURIComponent(init.name)}&creature_type=${init.creature_type}`, {
+                credentials: 'include'
+              });
               console.log('API response status:', response.status);
               
               if (response.ok) {
