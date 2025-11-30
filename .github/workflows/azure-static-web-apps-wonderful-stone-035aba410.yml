@@ -59,6 +59,10 @@ jobs:
       
       - name: Check coverage threshold (65% minimum)
         working-directory: ./backend
+        env:
+          DATABASE_URL: sqlite:///./test.db
+          JWT_SECRET: test_secret_key_for_ci_pipeline
+          ENVIRONMENT: test
         run: |
           python -m pytest tests/ \
             --cov=app \
