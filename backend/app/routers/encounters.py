@@ -6,7 +6,7 @@ from app.models.database import get_db
 from app.models.models import User, Encounter, Creature
 from app.models.schemas import (
     EncounterCreate, EncounterUpdate, EncounterRoundUpdate, EncounterResponse, 
-    EncounterSummary, CreatureCreate, CreatureUpdate, CreatureResponse, ErrorResponse
+    EncounterSummary, CreatureCreate, CreatureCreateNested, CreatureUpdate, CreatureResponse, ErrorResponse
 )
 from app.utils.dependencies import get_current_user
 import uuid
