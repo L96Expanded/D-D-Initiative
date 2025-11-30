@@ -26,8 +26,12 @@ class UUID(TypeDecorator):
         if value is None:
             return value
         elif dialect.name == 'postgresql':
-            return str(value)
+            # PostgreSQL with as_uuid=True expects UUID objects, not strings
+            if not isinstance(value, uuid.UUID):
+                return uuid.UUID(value)
+            return value
         else:
+            # SQLite and others: store as string
             if not isinstance(value, uuid.UUID):
                 return str(uuid.UUID(value))
             else:
