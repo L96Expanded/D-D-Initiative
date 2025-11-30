@@ -1,6 +1,6 @@
 # 🎲 D&D Initiative Tracker
 
-A modern, full-stack web application for tracking D&D encounters with worldwide access and one-click deployment. Built with React, FastAPI, PostgreSQL, and Cloudflare tunnels for mobile hosting.
+A modern, full-stack web application for tracking D&D encounters with worldwide access and automated CI/CD deployment. Built with React, FastAPI, PostgreSQL, and Azure Static Web Apps.
 
 ## 🚀 **ONE-CLICK STARTUP**
 
