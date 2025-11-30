@@ -14,7 +14,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title, width }
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50" style={{ zIndex: 9999 }}>
       <div
-        className={`bg-gray-800 text-white p-8 relative shadow-lg rounded-xl w-full max-w-lg border border-gray-600 ${width || ''}`}
+        className={`bg-gray-800 text-white p-8 relative shadow-lg rounded-xl w-full max-w-full border border-gray-600 ${width || ''}`}
         role="dialog"
         aria-modal="true"
       >
