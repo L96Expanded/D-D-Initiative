@@ -80,6 +80,23 @@ jobs:
           --resource-group BCSAI2025-DEVOPS-STUDENTS-A \
           --query "[?name=='CORS_ORIGINS'].value" -o tsv
     
+    - name: Configure Azure CORS
+      run: |
+        echo "Configuring Azure App Service CORS..."
+        az webapp cors add \
+          --name ${{ env.AZURE_WEBAPP_NAME }} \
+          --resource-group BCSAI2025-DEVOPS-STUDENTS-A \
+          --allowed-origins \
+            "https://karsusinitiative.com" \
+            "https://www.karsusinitiative.com" \
+            "https://wonderful-stone-035aba410.3.azurestaticapps.net" \
+            "http://localhost:3000" || echo "CORS origins already configured"
+        
+        echo "Verifying CORS configuration..."
+        az webapp cors show \
+          --name ${{ env.AZURE_WEBAPP_NAME }} \
+          --resource-group BCSAI2025-DEVOPS-STUDENTS-A
+    
     - name: Restart App Service
       run: |
         echo "Restarting App Service to apply changes..."
