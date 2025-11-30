@@ -279,6 +279,10 @@ backend/.coverage
 backend/coverage.xml
 backend/.pytest_cache/
 backend/test-results.xml
+backend/coverage.json
+*.coverage
+.coverage.*
+htmlcov/
 
 # Python virtual environments
 backend/.venv/
@@ -291,6 +295,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.so
+**/__pycache__/
+**/*.pyc
 
 # Environment variables
 .env
@@ -325,6 +331,9 @@ frontend/build/
 *.sqlite
 *.sqlite3
 test.db
+creature_database.json
+backend/creature_database.json
+.deployment-trigger
 
 # Monitoring data
 prometheus-data/

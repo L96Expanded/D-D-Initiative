@@ -1,63 +1,52 @@
 # 🎲 D&D Initiative Tracker
 
-A modern, full-stack web application for tracking D&D encounters with worldwide access and automated CI/CD deployment. Built with React, FastAPI, PostgreSQL, and Azure Static Web Apps.
+A production-ready, full-stack web application for tracking D&D encounters with automated CI/CD deployment, comprehensive testing, and monitoring. Built with React, FastAPI, PostgreSQL, Docker, and Azure.
 
-## 🚀 **ONE-CLICK STARTUP**
-
-**Start everything with a single click!**
-
-```bash
-# Double-click to start EVERYTHING:
-START_EVERYTHING.bat
-```
-
-**What it does automatically:**
-- ✅ Builds and starts Docker containers
-- ✅ Starts Cloudflare tunnel for worldwide access  
-- ✅ Opens application in browser
-- ✅ Makes your D&D tracker accessible at: **https://karsusinitiative.com**
-
-**Perfect for DMs who move between locations!** 🏠➡️🏢➡️🎮
+[![CI/CD Pipeline](https://github.com/L96Expanded/D-D-Initiative/actions/workflows/azure-app-service-deploy.yml/badge.svg)](https://github.com/L96Expanded/D-D-Initiative/actions)
+[![Test Coverage](https://img.shields.io/badge/coverage-71%25-brightgreen)](./docs/TEST_COVERAGE_REPORT.md)
 
 ## ✨ Features
 
-- **🌐 Worldwide Access**: Host from anywhere, players access from anywhere via https://karsusinitiative.com
-- **👤 User Authentication**: Secure JWT-based authentication with registration and login
-- **🪟 Dual-Window System**: Separate DM control panel and player display window
-- **⚔️ Encounter Management**: Create, edit, and delete encounters with multiple creatures
-- **🎯 Initiative Tracking**: Automatic sorting by initiative with turn-by-turn progression
-- **🔄 Real-time Sync**: Display window updates automatically when DM makes changes
-- **📁 File Upload**: Image support for creatures and encounter backgrounds
-- **📱 Mobile-Friendly**: Works perfectly on phones, tablets, and computers
-- **🖱️ One-Click Everything**: Desktop shortcut to automatically start everything
-- **🔐 Production Security**: JWT authentication, CORS protection, secure tunneling
+- **User Authentication**: Secure JWT-based authentication with bcrypt password hashing
+- **Encounter Management**: Create, edit, and delete encounters with multiple creatures
+- **Initiative Tracking**: Automatic sorting by initiative with turn-by-turn progression
+- **Dual-Window System**: Separate DM control panel and player display window
+- **Image Upload & Management**: Creature images with auto-fetch from D&D 5e API
+- **Real-time Sync**: Display window updates automatically when DM makes changes
+- **Mobile Responsive**: Works on phones, tablets, and desktops
+- **Production Deployment**: Live on Azure with CI/CD pipeline
+- **Comprehensive Testing**: 98 test cases with 71% code coverage
+- **Monitoring**: Application Insights, custom metrics, and health checks
 
 ## 🛠️ Tech Stack
 
 ### Frontend
-- **React 18** with TypeScript
-- **Vite** for fast development and building
-- **React Router** for navigation
-- **Axios** for API communication
-- **CSS3** with glassmorphism design
+- React 18 + TypeScript
+- Vite (build tool)
+- Axios (API client)
+- React Router (navigation)
 
 ### Backend
-- **FastAPI** with Python 3.11
-- **SQLAlchemy 2.0** with async support
-- **PostgreSQL 15** database
-- **JWT** authentication with bcrypt
-- **Pydantic** for data validation
+- FastAPI + Python 3.11
+- SQLAlchemy 2.0 (async ORM)
+- PostgreSQL 15
+- JWT authentication
+- Pytest (testing framework)
 
-### Infrastructure
-- **Docker & Docker Compose** for containerization
-- **Nginx** for frontend serving
-- **Volume mounting** for data persistence
+### DevOps & Infrastructure
+- **Docker** & Docker Compose
+- **CI/CD**: GitHub Actions
+- **Deployment**: Azure App Service + Azure Static Web Apps
+- **Monitoring**: Azure Application Insights
+- **Database**: Azure PostgreSQL
 
-## 🚀 Quick Setup
+## 🚀 Quick Start (5 Minutes)
 
-### ⚡ Fastest Way: Automated Setup Script
+### Prerequisites
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- [Git](https://git-scm.com/downloads)
 
-Just clone and run the setup script - it handles everything!
+### Automated Setup
 
 **Windows:**
 ```powershell
@@ -74,296 +63,289 @@ chmod +x setup.sh
 ./setup.sh
 ```
 
-**What it does automatically:**
-- ✅ Checks Docker is installed and running
-- ✅ Creates `.env` file with secure passwords  
-- ✅ Builds and starts all Docker containers
-- ✅ Waits for services to be ready
-- ✅ Opens the app in your browser
+The script automatically:
+- ✅ Checks Docker installation
+- ✅ Generates secure credentials
+- ✅ Creates `.env` file
+- ✅ Builds and starts containers
+- ✅ Opens browser to http://localhost:3000
 
-**See [QUICKSTART.md](QUICKSTART.md) for detailed setup instructions!**
-
-## 📖 Manual Setup
-
-If the automated script doesn't work or you prefer manual setup:
-
-### Prerequisites
-- **Docker Desktop** - [Download here](https://www.docker.com/products/docker-desktop/)
-- **Git** - [Download here](https://git-scm.com/downloads)
-
-### Installation Steps
+### Manual Setup
 
 ```bash
-# 1. Clone the repository
+# 1. Clone repository
 git clone https://github.com/L96Expanded/D-D-Initiative.git
 cd D-D-Initiative
 
 # 2. Create environment file
 cp .env.example .env
-# Edit .env and change POSTGRES_PASSWORD and JWT_SECRET to secure values
+# Edit .env - change POSTGRES_PASSWORD and JWT_SECRET
 
-# 3. Build and start containers
+# 3. Start with Docker Compose
 docker-compose up --build -d
 
-# 4. Wait 30-60 seconds for services to start
-
-# 5. Open your browser to http://localhost:3000
+# 4. Access application
+# Frontend: http://localhost:3000
+# API Docs: http://localhost:8000/docs
 ```
 
-### First Time Usage
+## 🧪 Running Tests
 
-1. **Create Account**: Register at http://localhost:3000
-2. **Create Encounter**: Click "Create New Encounter"
-3. **Add Creatures**: Add creatures with initiative values
-4. **Start Tracking**: Click "Start Encounter" and use "Next Turn"
+### Backend Tests (Pytest)
 
-### Stop the Application
 ```bash
-docker-compose down
+# Run all tests with coverage
+cd backend
+pytest tests/ -v --cov=app --cov-report=term-missing
+
+# Run specific test file
+pytest tests/test_encounters.py -v
+
+# Run tests in Docker
+docker-compose exec backend pytest tests/ -v
+
+# Generate HTML coverage report
+pytest tests/ --cov=app --cov-report=html
 ```
 
-## 🛠️ Troubleshooting
+**Test Results:**
+- Total Tests: 98
+- Passing: 98 (100%)
+- Coverage: 71% (exceeds 70% requirement)
+- Test Suites: Authentication, Encounters, Creatures, Uploads, Users, Database
 
-### Common Issues
+### Frontend Tests
 
-**"Port already in use" error:**
 ```bash
-# Stop conflicting services or change ports in docker-compose.yml
-# Default ports: 3000 (frontend), 8000 (backend), 5432 (database)
+cd frontend
+npm test
 ```
 
-**Docker not running:**
-- Ensure Docker Desktop is running (green whale icon in system tray)
-- Wait a full minute after starting Docker before running commands
+## 🚢 Deployment
 
-**Cannot connect to application:**
+### Automated Deployment (CI/CD)
+
+The project uses GitHub Actions for automated deployment:
+
+1. **Push to main branch** triggers the CI/CD pipeline
+2. **Backend tests run** (must pass for deployment)
+3. **Docker images build** for backend and frontend
+4. **Deploy to Azure**:
+   - Backend → Azure App Service
+   - Frontend → Azure Static Web Apps
+5. **Health checks** verify deployment
+
+### Manual Deployment
+
+#### Deploy Backend to Azure App Service
+
 ```bash
-# Check container status
-docker-compose ps
+# Login to Azure
+az login
 
-# View logs
-docker-compose logs backend
-docker-compose logs frontend
-
-# Wait longer - first build can take 5-10 minutes
+# Deploy backend
+cd azure-infrastructure
+./deploy-with-sp.ps1
 ```
 
-**Reset everything:**
+#### Deploy Frontend to Azure Static Web Apps
+
+Frontend deploys automatically via GitHub Actions when changes are pushed to main.
+
+### Environment Variables for Production
+
+Required environment variables (set in Azure App Service Configuration):
+
+```env
+DATABASE_URL=postgresql://user:password@host:5432/database
+JWT_SECRET=your-secure-secret-key-64-characters-minimum
+CORS_ORIGINS=["https://yourdomain.com"]
+ENVIRONMENT=production
+AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING=your-connection-string
+```
+
+## 📊 Monitoring
+
+### Application Insights (Azure)
+
+The application integrates with Azure Application Insights for:
+- Request/response tracking
+- Performance metrics
+- Error logging
+- Custom events
+- Dependency tracking
+
+### Health Checks
+
 ```bash
-docker-compose down -v  # Removes all data!
-docker-compose up --build -d
+# Check backend health
+curl http://localhost:8000/api/health
+
+# Check production health
+curl https://dnd-initiative-prod.azurewebsites.net/api/health
 ```
 
-### Access URLs
+### Metrics Endpoint
 
-Once running:
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8000
-- **API Documentation**: http://localhost:8000/docs
-- **Health Check**: http://localhost:8000/api/health
+```bash
+# View application metrics
+curl http://localhost:8000/metrics
+```
+
+Metrics include:
+- Request count by endpoint
+- Response time percentiles
+- Error rates
+- Database query performance
+
+### Monitoring Dashboard
+
+Grafana dashboard configuration available in `monitoring/grafana-dashboard.json`
 
 ## 📁 Project Structure
 
 ```
 D-D-Initiative/
-├── docker-compose.yml          # Docker services configuration
-├── .env                        # Environment variables
-├── README.md                   # This file
-├── frontend/                   # React frontend application
+├── frontend/              # React + TypeScript frontend
 │   ├── src/
-│   │   ├── pages/             # Page components (Login, Register, Home, Encounter)
-│   │   ├── components/        # Reusable UI components
-│   │   ├── context/           # React Context providers
-│   │   ├── utils/             # Utility functions and API client
-│   │   ├── types/             # TypeScript type definitions
-│   │   └── styles/            # CSS files with glassmorphism design
-│   ├── public/
-│   │   └── images/            # Static images and assets
-│   ├── Dockerfile             # Frontend container configuration
-│   ├── package.json           # Frontend dependencies
-│   └── vite.config.ts         # Vite configuration
-├── backend/                    # FastAPI backend application
+│   │   ├── components/    # Reusable UI components
+│   │   ├── pages/         # Page components
+│   │   ├── utils/         # API client, helpers
+│   │   └── types/         # TypeScript definitions
+│   ├── Dockerfile
+│   └── package.json
+│
+├── backend/               # FastAPI backend
 │   ├── app/
-│   │   ├── models/            # SQLAlchemy models and Pydantic schemas
-│   │   ├── routers/           # API route handlers
-│   │   ├── utils/             # Authentication and utility functions
-│   │   └── config.py          # Application configuration
-│   ├── Dockerfile             # Backend container configuration
-│   ├── requirements.txt       # Python dependencies
-│   └── main.py               # FastAPI application entry point
-└── uploads/                   # Volume for uploaded files
+│   │   ├── models/        # SQLAlchemy models, Pydantic schemas
+│   │   ├── routers/       # API endpoints
+│   │   └── utils/         # Auth, metrics, storage
+│   ├── tests/             # Pytest test suite (98 tests)
+│   ├── Dockerfile
+│   └── requirements.txt
+│
+├── azure-infrastructure/  # Infrastructure as Code (Bicep)
+│   ├── main.bicep
+│   └── modules/
+│
+├── .github/workflows/     # CI/CD pipelines
+│   └── azure-app-service-deploy.yml
+│
+├── docs/                  # Documentation
+│   ├── CODE_QUALITY_REVIEW.md
+│   ├── DOCKER_DOCUMENTATION.md
+│   ├── MONITORING_DOCUMENTATION.md
+│   └── TEST_COVERAGE_REPORT.md
+│
+├── docker-compose.yml     # Local development setup
+├── .env.example           # Environment template
+├── README.md              # This file
+├── REPORT.md              # DevOps improvements report
+├── QUICKSTART.md          # Beginner setup guide
+└── CONTRIBUTING.md        # Developer guidelines
 ```
 
-## 🚀 Getting Started
+## 🔧 Common Commands
 
-1. **Start the application**: `docker-compose up --build`
-2. **Access the frontend**: http://localhost:3000
-3. **Create an account** and start tracking your encounters!
-
-For detailed instructions, API documentation, and troubleshooting, see the full documentation in the project files.
-
-Happy adventuring! 🗡️✨
-
----
-
-## 🌐 Internet Access Setup (Advanced)
-
-**Want to allow friends to join from anywhere on the internet?** Follow this guide to make your D&D Initiative Tracker accessible from other devices and locations.
-
-### ⚠️ Security Warning
-Making your application internet-accessible requires proper security measures. Only proceed if you understand the risks and responsibilities involved.
-
-### Prerequisites for Internet Access
-- **Router admin access** (to configure port forwarding)
-- **Static IP or Dynamic DNS service** (like No-IP, DuckDNS)
-- **Domain name** (optional but recommended)
-- **SSL certificate** (highly recommended for security)
-
-### Step 1: Configure Production Environment
-
-1. **Copy the production environment file**:
-   ```bash
-   copy .env.production .env.prod
-   ```
-
-2. **Edit `.env.prod`** and update these critical values:
-   ```env
-   # Change these BEFORE deployment!
-   POSTGRES_PASSWORD=your_very_secure_database_password_here
-   JWT_SECRET=your_very_long_random_jwt_secret_key_here
-   DOMAIN_NAME=your-domain.com  # or your external IP
-   ```
-
-3. **Generate secure secrets**:
-   - **Database Password**: Use a password manager to generate a strong password
-   - **JWT Secret**: Generate a long random string (minimum 64 characters)
-
-### Step 2: Deploy in Production Mode
-
-**Windows:**
 ```bash
-.\deploy-production.bat
+# Start application
+docker-compose up -d
+
+# Stop application
+docker-compose down
+
+# View logs
+docker-compose logs -f backend
+docker-compose logs -f frontend
+
+# Restart services
+docker-compose restart
+
+# Rebuild containers
+docker-compose up --build -d
+
+# Run tests
+docker-compose exec backend pytest tests/ -v
+
+# Check container status
+docker-compose ps
+
+# Access database
+docker-compose exec postgres psql -U dnd_user -d dnd_tracker
+
+# Clean up (removes all data!)
+docker-compose down -v
 ```
 
-**Linux/Mac:**
+## 🐛 Troubleshooting
+
+### Port Conflicts
 ```bash
-chmod +x deploy-production.sh
-./deploy-production.sh
+# If ports 3000, 8000, or 5432 are in use
+# Option 1: Stop conflicting services
+# Option 2: Change ports in docker-compose.yml
 ```
 
-### Step 3: Configure Your Router
-
-1. **Access your router's admin panel** (usually http://192.168.1.1)
-2. **Find "Port Forwarding" or "Virtual Server"** section
-3. **Add these forwarding rules**:
-   - **Port 80** → Your computer's local IP (192.168.x.x)
-   - **Port 8000** → Your computer's local IP (192.168.x.x)
-   - **Port 443** → Your computer's local IP (192.168.x.x) (for HTTPS)
-
-### Step 4: Set Up Dynamic DNS (Recommended)
-
-If you don't have a static IP address:
-
-1. **Sign up for a free Dynamic DNS service**:
-   - [No-IP](https://www.noip.com) (free)
-   - [DuckDNS](https://www.duckdns.org) (free)
-   - [Dynu](https://www.dynu.com) (free)
-
-2. **Create a hostname** (e.g., `mydndgame.ddns.net`)
-3. **Update your `.env.prod`** with your hostname:
-   ```env
-   DOMAIN_NAME=mydndgame.ddns.net
-   ```
-
-### Step 5: Share Access with Players
-
-Once configured, players can access your game at:
-- **Main App**: `http://your-domain.com` or `http://your-external-ip`
-- **Display Window**: They can open the display window from within the app
-
-### Step 6: Security Best Practices
-
-1. **Use HTTPS** (SSL certificates):
-   - Get free SSL from [Let's Encrypt](https://letsencrypt.org)
-   - Update nginx configuration to enable SSL
-
-2. **Regular backups**:
-   ```bash
-   # Backup your data
-   docker-compose -f docker-compose.prod.yml exec postgres pg_dump -U dnd_user dnd_tracker > backup.sql
-   ```
-
-3. **Monitor access logs**:
-   ```bash
-   docker-compose -f docker-compose.prod.yml logs backend
-   ```
-
-4. **Update regularly**:
-   ```bash
-   git pull
-   .\deploy-production.bat
-   ```
-
-### Troubleshooting Internet Access
-
-**Can't connect from outside:**
-- Check router port forwarding is correct
-- Verify your external IP hasn't changed
-- Test with your phone's mobile data (not WiFi)
-
-**Security concerns:**
-- Use strong passwords for all accounts
-- Enable two-factor authentication if possible
-- Consider using a VPN for sensitive sessions
-
-**Performance issues:**
-- Check your internet upload speed
-- Consider upgrading your hosting if many users
-
-### Alternative: Cloud Hosting
-
-For easier internet access, consider deploying to cloud platforms:
-- **DigitalOcean** ($5/month droplet)
-- **AWS EC2** (free tier available)
-- **Google Cloud Platform** (free tier available)
-- **Microsoft Azure** (free tier available)
-
----
-
-## 🧪 Testing
-
-The project includes a comprehensive testing framework with 102 test cases covering authentication, creature management, and encounter functionality.
-
-### Current Test Status
-- **Total Tests**: 148 test cases (was 102)
-- **Passing Tests**: 146 (98.6%) 
-- **Code Coverage**: **99%** (was 82%)
-
-### Test Suites
--  **Authentication Tests**: 28/28 passing (100%)
--  **Creature Management Tests**: 41/43 passing (95.3%)  
--  **Encounter Tests**: 24/24 passing (100%)*
--  **Standalone Creature Tests**: 19/19 passing (100%)
--  **Upload Tests**: 24/24 passing (100%)
--  **User Profile Tests**: 15/15 passing (100%)
--  **Database Tests**: 10/10 passing (100%)
--  **7 Tests Skipped**: Initiative management endpoints (planned for future implementation)
-
-*All currently implemented encounter functionality is fully tested
-
-### Running Tests
+### Docker Not Running
 ```bash
-# Navigate to backend directory
+# Ensure Docker Desktop is running
+# Look for green whale icon in system tray
+```
+
+### Database Connection Errors
+```bash
+# Reset database
+docker-compose down -v
+docker-compose up -d
+```
+
+### Tests Failing
+```bash
+# Ensure dependencies are up to date
 cd backend
-
-# Run all tests with coverage
-python -m pytest tests/ --cov=app --cov-report=term-missing
-
-# Run specific test suite
-python -m pytest tests/test_auth.py -v
-python -m pytest tests/test_creatures.py -v
-python -m pytest tests/test_encounters.py -v
-
-# Generate HTML coverage report
-python -m pytest tests/ --cov=app --cov-report=html:htmlcov
+pip install -r requirements-dev.txt
+pytest tests/ -v
 ```
+
+## 📚 Documentation
+
+- **[QUICKSTART.md](QUICKSTART.md)** - 5-minute setup guide
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Development guidelines
+- **[REPORT.md](REPORT.md)** - DevOps improvements summary
+- **[docs/](docs/)** - Technical documentation
+  - Code Quality Review
+  - Docker Documentation
+  - Monitoring Documentation
+  - Test Coverage Report
+
+## 🔐 Security
+
+- JWT authentication with bcrypt password hashing
+- CORS protection
+- SQL injection prevention (SQLAlchemy ORM)
+- XSS protection (React)
+- Secure environment variable management
+- Production secrets stored in Azure Key Vault
+
+## 🎯 Production URLs
+
+- **Frontend**: https://karsusinitiative.com
+- **Backend API**: https://dnd-initiative-prod.azurewebsites.net
+- **API Documentation**: https://dnd-initiative-prod.azurewebsites.net/docs
+
+## 📄 License
+
+This project is for educational purposes as part of a DevOps course assessment.
+
+## 👥 Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
+
+## 🆘 Support
+
+- **Issues**: [GitHub Issues](https://github.com/L96Expanded/D-D-Initiative/issues)
+- **Documentation**: See [docs/](docs/) folder
+
+---
+
+**Built with ❤️ for DMs and their adventuring parties** 🗡️✨
