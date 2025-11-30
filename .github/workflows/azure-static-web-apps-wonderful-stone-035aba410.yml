@@ -137,13 +137,8 @@ jobs:
           npm run build
           echo "Build completed. Checking dist folder..."
           ls -la dist/
-
-      - name: Copy staticwebapp.config.json to dist
-        run: |
-          echo "Copying staticwebapp.config.json to frontend/dist/"
-          cp staticwebapp.config.json frontend/dist/
-          echo "Contents of dist:"
-          ls -la frontend/dist/
+          echo "Verifying staticwebapp.config.json was copied from public/:"
+          ls -la dist/staticwebapp.config.json || echo "Warning: staticwebapp.config.json not found"
 
       - name: Deploy to Azure Static Web Apps
         id: builddeploy
