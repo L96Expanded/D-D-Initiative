@@ -5,7 +5,7 @@ from typing import List
 from app.models.database import get_db
 from app.models.models import User, Encounter, Creature
 from app.models.schemas import (
-    EncounterCreate, EncounterUpdate, EncounterResponse, 
+    EncounterCreate, EncounterUpdate, EncounterRoundUpdate, EncounterResponse, 
     EncounterSummary, CreatureCreate, CreatureUpdate, CreatureResponse, ErrorResponse
 )
 from app.utils.dependencies import get_current_user
@@ -120,6 +120,31 @@ async def update_encounter(
     if encounter_data.background_image is not None:
         encounter.background_image = encounter_data.background_image
     
+    db.commit()
+    db.refresh(encounter)
+    
+    return EncounterResponse.model_validate(encounter)
+
+@router.patch("/{encounter_id}/round", response_model=EncounterResponse)
+async def update_encounter_round(
+    encounter_id: uuid.UUID,
+    round_data: EncounterRoundUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update the round number of an encounter."""
+    encounter = db.query(Encounter).filter(
+        Encounter.id == encounter_id,
+        Encounter.user_id == current_user.id
+    ).first()
+    
+    if not encounter:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Encounter not found"
+        )
+    
+    encounter.round_number = round_data.round_number
     db.commit()
     db.refresh(encounter)
     

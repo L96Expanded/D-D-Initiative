@@ -1,0 +1,6 @@
+[run]
+omit =
+    */app/utils/auth_helpers.py
+    */tests/*
+    */venv/*
+    */__pycache__/*

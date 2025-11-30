@@ -1,15 +1,16 @@
 from pydantic_settings import BaseSettings
-from typing import List
+from typing import List, Optional
 import os
 import json
+import sys
 
 class Settings(BaseSettings):
     # Database
-    DATABASE_URL: str = "postgresql://dnd_user:secure_password@localhost:5432/dnd_tracker"
+    DATABASE_URL: str
     
-    # JWT
-    JWT_SECRET: str = "your_jwt_secret_key_change_in_production"
-    SECRET_KEY: str = "your_jwt_secret_key_change_in_production"  # Alias for JWT_SECRET
+    # JWT - No defaults for security
+    JWT_SECRET: str
+    SECRET_KEY: Optional[str] = None  # Will be set from JWT_SECRET if not provided
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRATION_HOURS: int = 24
     
@@ -40,6 +41,30 @@ class Settings(BaseSettings):
         
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        
+        # Validate critical configuration
+        if not self.DATABASE_URL:
+            print("ERROR: DATABASE_URL is required but not set!", file=sys.stderr)
+            print("Please set DATABASE_URL environment variable or add it to .env file", file=sys.stderr)
+            sys.exit(1)
+            
+        if not self.JWT_SECRET:
+            print("ERROR: JWT_SECRET is required but not set!", file=sys.stderr)
+            print("Please set JWT_SECRET environment variable or add it to .env file", file=sys.stderr)
+            print("Generate a secure secret with: openssl rand -base64 32", file=sys.stderr)
+            sys.exit(1)
+        
+        # Warn about insecure secrets in production
+        if self.ENVIRONMENT == "production":
+            insecure_secrets = [
+                "changeme", "change_me", "your_secret", "your_jwt_secret", 
+                "secure_password", "password", "secret"
+            ]
+            jwt_lower = self.JWT_SECRET.lower()
+            if any(insecure in jwt_lower for insecure in insecure_secrets):
+                print("WARNING: JWT_SECRET appears to be insecure or a placeholder!", file=sys.stderr)
+                print("Please use a cryptographically random secret in production", file=sys.stderr)
+        
         # Handle JSON string parsing for CORS_ORIGINS from environment
         cors_origins_env = os.getenv('CORS_ORIGINS')
         if cors_origins_env:
@@ -57,10 +82,8 @@ class Settings(BaseSettings):
                 pass  # Keep default if JSON parsing fails
         
         # Use SECRET_KEY for JWT_SECRET if provided
-        secret_key_env = os.getenv('SECRET_KEY')
-        if secret_key_env:
-            self.JWT_SECRET = secret_key_env
-            self.SECRET_KEY = secret_key_env
+        if not self.SECRET_KEY:
+            self.SECRET_KEY = self.JWT_SECRET
         
         # Auto-enable Azure Storage if connection string is provided
         if self.AZURE_STORAGE_CONNECTION_STRING:

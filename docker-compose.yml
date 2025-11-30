@@ -3,9 +3,9 @@ services:
     image: postgres:15
     container_name: dnd_postgres
     environment:
-      POSTGRES_DB: dnd_tracker
-      POSTGRES_USER: dnd_user
-      POSTGRES_PASSWORD: secure_password
+      POSTGRES_DB: ${POSTGRES_DB:-dnd_tracker}
+      POSTGRES_USER: ${POSTGRES_USER:-dnd_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -14,7 +14,7 @@ services:
     networks:
       - dnd_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dnd_user -d dnd_tracker"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-dnd_user} -d ${POSTGRES_DB:-dnd_tracker}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -24,13 +24,19 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     container_name: dnd_backend
+    env_file:
+      - .env
     environment:
-      DATABASE_URL: postgresql://dnd_user:secure_password@postgres:5432/dnd_tracker
-      JWT_SECRET: your_jwt_secret_key_change_in_production
-      JWT_ALGORITHM: HS256
-      JWT_EXPIRATION_HOURS: 24
-      UPLOAD_DIR: /app/uploads
-      DATABASE_IMAGES_DIR: /app/database_images
+      DATABASE_URL: ${DATABASE_URL:-postgresql://dnd_user:changeme@postgres:5432/dnd_tracker}
+      JWT_SECRET: ${JWT_SECRET:-changeme_your_jwt_secret}
+      SECRET_KEY: ${SECRET_KEY:-changeme_your_jwt_secret}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      JWT_EXPIRATION_HOURS: ${JWT_EXPIRATION_HOURS:-24}
+      UPLOAD_DIR: ${UPLOAD_DIR:-/app/uploads}
+      DATABASE_IMAGES_DIR: ${DATABASE_IMAGES_DIR:-/app/database_images}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      CORS_ORIGINS: ${CORS_ORIGINS:-["http://localhost:3000"]}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-["localhost"]}
     depends_on:
       postgres:
         condition: service_healthy
@@ -55,7 +61,7 @@ services:
     depends_on:
       - backend
     environment:
-      - VITE_API_URL=http://localhost:8000
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:8000}
     networks:
       - dnd_network
     restart: unless-stopped

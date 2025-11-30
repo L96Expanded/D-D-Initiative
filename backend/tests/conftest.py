@@ -71,23 +71,20 @@ def client(test_db_session) -> TestClient:
 def sample_user_data():
     """Sample user data for testing."""
     return {
-        "username": "testuser",
         "email": "test@example.com",
         "password": "TestPassword123!",
+        "confirm_password": "TestPassword123!",
     }
 
 
 @pytest.fixture
 def sample_creature_data():
-    """Sample creature data for testing."""
+    """Provides sample creature data for testing."""
     return {
         "name": "Goblin",
         "initiative": 15,
-        "hp": 20,
-        "max_hp": 20,
-        "ac": 13,
-        "creature_type": "monster",
-        "notes": "A sneaky goblin",
+        "creature_type": "enemy",
+        "image_url": None,
     }
 
 
@@ -96,8 +93,7 @@ def sample_encounter_data():
     """Sample encounter data for testing."""
     return {
         "name": "Goblin Ambush",
-        "description": "A surprise encounter with goblins",
-        "round_number": 1,
+        "background_image": None,
     }
 
 
@@ -105,16 +101,10 @@ def sample_encounter_data():
 def authenticated_headers(client, sample_user_data):
     """Create an authenticated user and return authorization headers."""
     # Register user
-    client.post("/api/users/register", json=sample_user_data)
+    sample_user_data["confirm_password"] = sample_user_data["password"]
+    response = client.post("/auth/register", json=sample_user_data)
     
-    # Login
-    response = client.post(
-        "/api/auth/token",
-        data={
-            "username": sample_user_data["username"],
-            "password": sample_user_data["password"],
-        },
-    )
+    # Get token from registration response
     token = response.json()["access_token"]
     
     return {"Authorization": f"Bearer {token}"}

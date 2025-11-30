@@ -34,8 +34,12 @@ class CreatureBase(BaseModel):
     creature_type: CreatureType
     image_url: Optional[str] = None
 
-class CreatureCreate(CreatureBase):
+class CreatureCreateNested(CreatureBase):
+    """Schema for creating creatures nested within encounters (no encounter_id needed)."""
     pass
+
+class CreatureCreate(CreatureBase):
+    encounter_id: uuid.UUID
 
 class CreatureUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=255)
@@ -56,15 +60,19 @@ class EncounterBase(BaseModel):
     background_image: Optional[str] = None
 
 class EncounterCreate(EncounterBase):
-    creatures: List[CreatureCreate] = []
+    creatures: List[CreatureCreateNested] = []
 
 class EncounterUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=255)
     background_image: Optional[str] = None
 
+class EncounterRoundUpdate(BaseModel):
+    round_number: int = Field(..., ge=1)
+
 class EncounterResponse(EncounterBase):
     id: uuid.UUID
     user_id: uuid.UUID
+    round_number: int
     created_at: datetime
     updated_at: datetime
     creatures: List[CreatureResponse] = []
@@ -85,7 +93,7 @@ class PresetBase(BaseModel):
     background_image: Optional[str] = None
 
 class PresetCreate(PresetBase):
-    creatures: List[CreatureCreate] = []
+    creatures: List[CreatureCreateNested] = []
 
 class PresetUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=255)
