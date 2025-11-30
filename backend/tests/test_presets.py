@@ -115,3 +115,99 @@ class TestPresetEndpoints:
         
         # Accept both 401 and 403 (varies between environments)
         assert response.status_code in [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN]
+    
+    def test_update_preset(self, client, authenticated_headers):
+        """Test updating a preset."""
+        # Create a preset
+        preset_data = {
+            "name": "Original Preset",
+            "description": "Original description"
+        }
+        create_response = client.post(
+            "/presets/",
+            json=preset_data,
+            headers=authenticated_headers
+        )
+        preset_id = create_response.json()["id"]
+        
+        # Update the preset
+        update_data = {
+            "name": "Updated Preset",
+            "description": "Updated description"
+        }
+        response = client.put(
+            f"/presets/{preset_id}",
+            json=update_data,
+            headers=authenticated_headers
+        )
+        
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert data["name"] == "Updated Preset"
+        assert data["description"] == "Updated description"
+        
+    def test_update_preset_with_creatures(self, client, authenticated_headers):
+        """Test updating a preset with creatures."""
+        # Create a preset with creatures
+        preset_data = {
+            "name": "Battle Preset",
+            "description": "Pre-configured battle",
+            "creatures": [
+                {
+                    "name": "Goblin",
+                    "initiative": 12,
+                    "creature_type": "enemy"
+                }
+            ]
+        }
+        create_response = client.post(
+            "/presets/",
+            json=preset_data,
+            headers=authenticated_headers
+        )
+        preset_id = create_response.json()["id"]
+        
+        # Update with new creatures
+        update_data = {
+            "name": "Updated Battle",
+            "description": "Updated battle",
+            "creatures": [
+                {
+                    "name": "Orc",
+                    "initiative": 15,
+                    "creature_type": "enemy"
+                },
+                {
+                    "name": "Knight",
+                    "initiative": 18,
+                    "creature_type": "player"
+                }
+            ]
+        }
+        response = client.put(
+            f"/presets/{preset_id}",
+            json=update_data,
+            headers=authenticated_headers
+        )
+        
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert data["name"] == "Updated Battle"
+        assert len(data["creatures"]) == 2
+        assert data["creatures"][0]["name"] == "Orc"
+        assert data["creatures"][1]["name"] == "Knight"
+        
+    def test_update_nonexistent_preset(self, client, authenticated_headers):
+        """Test updating a preset that doesn't exist."""
+        fake_id = "00000000-0000-0000-0000-000000000000"
+        update_data = {
+            "name": "Updated Preset",
+            "description": "Updated description"
+        }
+        response = client.put(
+            f"/presets/{fake_id}",
+            json=update_data,
+            headers=authenticated_headers
+        )
+        
+        assert response.status_code == status.HTTP_404_NOT_FOUND

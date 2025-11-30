@@ -57,7 +57,7 @@ jobs:
             --cov-config=.coveragerc \
             -v
       
-      - name: Check coverage threshold (65% minimum)
+      - name: Check coverage threshold (70% minimum)
         working-directory: ./backend
         env:
           DATABASE_URL: sqlite:///./test.db
@@ -67,7 +67,7 @@ jobs:
           python -m pytest tests/ \
             --cov=app \
             --cov-config=.coveragerc \
-            --cov-fail-under=65 \
+            --cov-fail-under=70 \
             -q
       
       - name: Run Bandit security scan
