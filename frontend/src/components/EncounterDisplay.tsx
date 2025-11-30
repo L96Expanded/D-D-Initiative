@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
+import { getApiBaseUrl } from '../utils/api';
 import type { Encounter, CreatureType } from '../types';
 import '../pages/Encounter.css';
 
@@ -62,13 +63,13 @@ const CreatureImage: React.FC<{ creature: InitiativeType }> = ({ creature }) => 
             imageUrl = creature.image_url;
           } else if (creature.image_url.startsWith('/database_images/')) {
             // Database image
-            imageUrl = `http://localhost:8000${creature.image_url}`;
+            imageUrl = `${getApiBaseUrl()}${creature.image_url}`;
           } else if (creature.image_url.startsWith('database_images/')) {
             // Database image without leading slash
-            imageUrl = `http://localhost:8000/${creature.image_url}`;
+            imageUrl = `${getApiBaseUrl()}/${creature.image_url}`;
           } else {
             // Uploaded file
-            imageUrl = `http://localhost:8000/uploads/${creature.image_url}`;
+            imageUrl = `${getApiBaseUrl()}/uploads/${creature.image_url}`;
           }
           
           console.log(`Constructing URL for image: "${creature.image_url}" -> "${imageUrl}"`);
@@ -99,7 +100,7 @@ const CreatureImage: React.FC<{ creature: InitiativeType }> = ({ creature }) => 
             // Handle relative paths from API
             let imageUrl = data.image_url;
             if (data.image_url.startsWith('/database_images/')) {
-              imageUrl = `http://localhost:8000${data.image_url}`;
+              imageUrl = `${getApiBaseUrl()}${data.image_url}`;
             }
             
             // Test if the API image actually loads
@@ -216,16 +217,16 @@ const EncounterDisplay: React.FC<EncounterDisplayProps> = ({
       return imageUrl;
     } else if (imageUrl.startsWith('/database_images/')) {
       // Database image
-      return `http://localhost:8000${imageUrl}`;
+      return `${getApiBaseUrl()}${imageUrl}`;
     } else if (imageUrl.startsWith('database_images/')) {
       // Database image without leading slash
-      return `http://localhost:8000/${imageUrl}`;
+      return `${getApiBaseUrl()}/${imageUrl}`;
     } else if (imageUrl.startsWith('/uploads/')) {
-      return `http://localhost:8000${imageUrl}`;
+      return `${getApiBaseUrl()}${imageUrl}`;
     } else if (imageUrl.startsWith('user_uploads/')) {
-      return `http://localhost:8000/uploads/${imageUrl}`;
+      return `${getApiBaseUrl()}/uploads/${imageUrl}`;
     } else {
-      return `http://localhost:8000/uploads/${imageUrl}`;
+      return `${getApiBaseUrl()}/uploads/${imageUrl}`;
     }
   };
 

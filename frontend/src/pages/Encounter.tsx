@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { encountersAPI, creaturesAPI } from '../utils/api';
+import { encountersAPI, creaturesAPI, getApiBaseUrl } from '../utils/api';
 import type { Encounter, Creature, CreateCreature, CreatureType } from '../types';
 import CreatureModal from '../components/CreatureModal';
 import './Encounter.css';
@@ -145,22 +145,22 @@ const Encounter: React.FC = () => {
       return imageUrl;
     } else if (imageUrl.startsWith('/database_images/')) {
       // Database image
-      return `http://localhost:8000${imageUrl}`;
+      return `${getApiBaseUrl()}${imageUrl}`;
     } else if (imageUrl.startsWith('database_images/')) {
       // Database image without leading slash
-      return `http://localhost:8000/${imageUrl}`;
+      return `${getApiBaseUrl()}/${imageUrl}`;
     } else if (imageUrl.startsWith('/uploads/')) {
       // Backend upload URL - construct full URL
-      return `http://localhost:8000${imageUrl}`;
+      return `${getApiBaseUrl()}${imageUrl}`;
     } else if (imageUrl.startsWith('/')) {
       // Frontend static asset
       return imageUrl;
     } else if (imageUrl.startsWith('user_uploads/')) {
       // Old format: user_uploads/filename.jpg (without /uploads/ prefix)
-      return `http://localhost:8000/uploads/${imageUrl}`;
+      return `${getApiBaseUrl()}/uploads/${imageUrl}`;
     } else {
       // Other relative backend path - assume it's an upload
-      return `http://localhost:8000/uploads/${imageUrl}`;
+      return `${getApiBaseUrl()}/uploads/${imageUrl}`;
     }
   };
 

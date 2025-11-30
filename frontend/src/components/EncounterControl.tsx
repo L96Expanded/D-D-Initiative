@@ -43,7 +43,7 @@ const EncounterControl: React.FC = () => {
   const getFullImageUrl = (imageUrl: string | undefined): string | undefined => {
     if (!imageUrl) return undefined;
     if (imageUrl.startsWith('/database_images/')) {
-      return `http://localhost:8000${imageUrl}`;
+      return `${getApiBaseUrl()}${imageUrl}`;
     }
     return imageUrl;
   };

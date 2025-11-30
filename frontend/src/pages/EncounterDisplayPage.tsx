@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
+import { getApiBaseUrl } from '../utils/api';
 import type { Encounter, CreatureType } from '../types';
 import '../pages/Encounter.css';
 
@@ -96,16 +97,16 @@ const EncounterDisplayPage: React.FC = () => {
       return imageUrl;
     } else if (imageUrl.startsWith('/database_images/')) {
       // Database image
-      return `http://localhost:8000${imageUrl}`;
+      return `${getApiBaseUrl()}${imageUrl}`;
     } else if (imageUrl.startsWith('database_images/')) {
       // Database image without leading slash
-      return `http://localhost:8000/${imageUrl}`;
+      return `${getApiBaseUrl()}/${imageUrl}`;
     } else if (imageUrl.startsWith('/uploads/')) {
-      return `http://localhost:8000${imageUrl}`;
+      return `${getApiBaseUrl()}${imageUrl}`;
     } else if (imageUrl.startsWith('user_uploads/')) {
-      return `http://localhost:8000/uploads/${imageUrl}`;
+      return `${getApiBaseUrl()}/uploads/${imageUrl}`;
     } else {
-      return `http://localhost:8000/uploads/${imageUrl}`;
+      return `${getApiBaseUrl()}/uploads/${imageUrl}`;
     }
   };
 

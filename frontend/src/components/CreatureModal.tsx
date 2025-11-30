@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import Modal from './Modal';
+import { getApiBaseUrl } from '../utils/api';
 import type { CreateCreature, CreatureType } from '../types';
 
 interface CreatureModalProps {
@@ -73,7 +74,7 @@ const CreatureModal: React.FC<CreatureModalProps> = ({ isOpen, onClose, onSubmit
       try {
         setIsFetchingImage(true);
         console.log('Fetching image for creature before submit:', name);
-        const response = await fetch(`http://localhost:8000/api/creature-images/get_creature_image?name=${encodeURIComponent(name)}&creature_type=${creatureType}`);
+        const response = await fetch(`${getApiBaseUrl()}/api/creature-images/get_creature_image?name=${encodeURIComponent(name)}&creature_type=${creatureType}`);
         console.log('API response status:', response.status);
         
         if (response.ok) {
