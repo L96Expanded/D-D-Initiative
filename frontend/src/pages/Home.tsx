@@ -128,6 +128,7 @@ const Home: React.FC = () => {
         creatures: creatures
       };
       
+      console.log('Creating encounter with data:', JSON.stringify(newEncounterData, null, 2));
       const newEncounter = await encountersAPI.create(newEncounterData);
       
       // Update the encounters list with the new encounter

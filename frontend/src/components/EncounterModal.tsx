@@ -125,7 +125,9 @@ const EncounterModal: React.FC<EncounterModalProps> = ({ isOpen, onClose, onSubm
         })
       );
 
-      onSubmit({ name: encounterName, background_image: backgroundImageUrl, creatures });
+      const encounterData = { name: encounterName, background_image: backgroundImageUrl, creatures };
+      console.log('EncounterModal submitting data:', JSON.stringify(encounterData, null, 2));
+      onSubmit(encounterData);
       
       // Reset form
       setEncounterName('');
@@ -134,6 +136,7 @@ const EncounterModal: React.FC<EncounterModalProps> = ({ isOpen, onClose, onSubm
       setFormError(null);
       onClose();
     } catch (error) {
+      console.error('EncounterModal error:', error);
       setFormError('Failed to create encounter. Please try again.');
     }
   };
