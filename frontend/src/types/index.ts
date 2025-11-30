@@ -110,6 +110,7 @@ export interface UpdatePreset {
   name?: string;
   description?: string;
   background_image?: string;
+  creatures?: CreateCreature[];
 }
 
 export interface FileUpload {

@@ -7,7 +7,7 @@ interface EditPresetModalProps {
   isOpen: boolean;
   preset: Preset;
   onClose: () => void;
-  onSubmit: (id: string, updateData: UpdatePreset, creatures: CreateCreature[]) => void;
+  onSubmit: (id: string, updateData: UpdatePreset) => void;
 }
 
 const EditPresetModal: React.FC<EditPresetModalProps> = ({ isOpen, preset, onClose, onSubmit }) => {
@@ -109,10 +109,11 @@ const EditPresetModal: React.FC<EditPresetModalProps> = ({ isOpen, preset, onClo
     const updateData: UpdatePreset = {
       name: name.trim(),
       description: description.trim() || undefined,
-      background_image: backgroundImageUrl
+      background_image: backgroundImageUrl,
+      creatures: creatures
     };
 
-    onSubmit(preset.id, updateData, creatures);
+    onSubmit(preset.id, updateData);
     handleClose();
   };
 

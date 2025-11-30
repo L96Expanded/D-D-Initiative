@@ -203,35 +203,22 @@ const Home: React.FC = () => {
     }
   };
 
-  const handleEditPresetSubmit = async (id: string, updateData: UpdatePreset, creatures: CreateCreature[]) => {
+  const handleEditPresetSubmit = async (id: string, updateData: UpdatePreset) => {
     setLoading(true);
     setError(null);
     try {
-      // Update preset basic info
-      await presetsAPI.update(id, updateData);
+      // Update preset with creatures included in updateData
+      const updatedPreset = await presetsAPI.update(id, updateData);
       
-      // For creatures, we need to recreate the preset (similar to encounters)
-      const currentPreset = await presetsAPI.getById(id);
-      await presetsAPI.delete(id);
-      
-      const newPresetData = {
-        name: updateData.name || currentPreset.name,
-        description: updateData.description || currentPreset.description,
-        background_image: updateData.background_image || currentPreset.background_image,
-        creatures: creatures
-      };
-      
-      const newPreset = await presetsAPI.create(newPresetData);
-      
+      // Update the presets list with the updated data
       setPresets(prev => prev.map(preset => 
         preset.id === id 
           ? { 
-              ...preset, 
-              id: newPreset.id,
-              name: newPreset.name,
-              description: newPreset.description,
-              background_image: newPreset.background_image,
-              creature_count: newPreset.creatures ? newPreset.creatures.length : 0
+              ...preset,
+              name: updatedPreset.name,
+              description: updatedPreset.description,
+              background_image: updatedPreset.background_image,
+              creature_count: updatedPreset.creatures ? updatedPreset.creatures.length : 0
             }
           : preset
       ));
