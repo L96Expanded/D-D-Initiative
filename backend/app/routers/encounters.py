@@ -49,31 +49,47 @@ async def create_encounter(
     db: Session = Depends(get_db)
 ):
     """Create a new encounter."""
-    # Create encounter
-    db_encounter = Encounter(
-        user_id=current_user.id,
-        name=encounter_data.name,
-        background_image=encounter_data.background_image
-    )
-    
-    db.add(db_encounter)
-    db.flush()  # Get the ID without committing
-    
-    # Create creatures
-    for creature_data in encounter_data.creatures:
-        db_creature = Creature(
-            encounter_id=db_encounter.id,
-            name=creature_data.name,
-            initiative=creature_data.initiative,
-            creature_type=creature_data.creature_type,
-            image_url=creature_data.image_url
+    try:
+        # Create encounter
+        db_encounter = Encounter(
+            user_id=current_user.id,
+            name=encounter_data.name,
+            background_image=encounter_data.background_image
         )
-        db.add(db_creature)
-    
-    db.commit()
-    db.refresh(db_encounter)
-    
-    return EncounterResponse.model_validate(db_encounter)
+        
+        db.add(db_encounter)
+        db.flush()  # Get the ID without committing
+        
+        # Create creatures
+        for idx, creature_data in enumerate(encounter_data.creatures):
+            try:
+                db_creature = Creature(
+                    encounter_id=db_encounter.id,
+                    name=creature_data.name,
+                    initiative=creature_data.initiative,
+                    creature_type=creature_data.creature_type,
+                    image_url=creature_data.image_url
+                )
+                db.add(db_creature)
+            except Exception as creature_error:
+                db.rollback()
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Error creating creature {idx + 1} '{creature_data.name}': {str(creature_error)}"
+                )
+        
+        db.commit()
+        db.refresh(db_encounter)
+        
+        return EncounterResponse.model_validate(db_encounter)
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create encounter: {str(e)}"
+        )
 
 @router.get("/{encounter_id}", response_model=EncounterResponse)
 async def get_encounter(

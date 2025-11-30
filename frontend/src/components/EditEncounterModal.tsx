@@ -145,7 +145,9 @@ const EditEncounterModal: React.FC<EditEncounterModalProps> = ({
           // Auto-fetch image from creature database if no file uploaded and no existing image
           try {
             console.log('Fetching image for creature:', init.name);
-            const response = await fetch(`${getApiBaseUrl()}/api/creature-images/get_creature_image?name=${encodeURIComponent(init.name)}&creature_type=${init.creature_type}`);
+            const response = await fetch(`${getApiBaseUrl()}/api/creature-images/get_creature_image?name=${encodeURIComponent(init.name)}&creature_type=${init.creature_type}`, {
+              credentials: 'include'
+            });
             console.log('API response status:', response.status);
             
             if (response.ok) {
