@@ -3,7 +3,7 @@
 A production-ready, full-stack web application for tracking D&D encounters with automated CI/CD deployment, comprehensive testing, and monitoring. Built with React, FastAPI, PostgreSQL, Docker, and Azure.
 
 [![CI/CD Pipeline](https://github.com/L96Expanded/D-D-Initiative/actions/workflows/azure-app-service-deploy.yml/badge.svg)](https://github.com/L96Expanded/D-D-Initiative/actions)
-[![Test Coverage](https://img.shields.io/badge/coverage-71%25-brightgreen)](./docs/TEST_COVERAGE_REPORT.md)
+[![Test Coverage](https://img.shields.io/badge/coverage-71%25-brightgreen)](#-running-tests)
 
 ## ✨ Features
 
@@ -318,14 +318,7 @@ docker-compose up --build -d
 
 ## 📚 Documentation
 
-- **[QUICKSTART.md](QUICKSTART.md)** - 5-minute setup guide
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Development guidelines
-- **[REPORT.md](REPORT.md)** - DevOps improvements summary
-- **[docs/](docs/)** - Technical documentation
-  - Code Quality Review
-  - Docker Documentation
-  - Monitoring Documentation
-  - Test Coverage Report
+- **[REPORT.md](REPORT.md)** - Complete DevOps improvements documentation
 
 ## 🔐 Security
 
