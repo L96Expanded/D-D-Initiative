@@ -51,41 +51,6 @@ const PublicRoute: React.FC<PublicRouteProps> = ({ children }: PublicRouteProps)
 };
 
 const App: React.FC = () => {
-  // Load Ko-fi widget on mount (except for encounter display page)
-  React.useEffect(() => {
-    // Check if current path is encounter-display
-    const isDisplayPage = window.location.pathname.includes('/encounter-display/');
-    
-    // Don't load Ko-fi widget on encounter display page
-    if (isDisplayPage) {
-      return;
-    }
-    
-    // Load Ko-fi overlay script
-    const script = document.createElement('script');
-    script.src = 'https://storage.ko-fi.com/cdn/scripts/overlay-widget.js';
-    script.async = true;
-    script.onload = () => {
-      // Initialize Ko-fi widget after script loads
-      if ((window as any).kofiWidgetOverlay) {
-        (window as any).kofiWidgetOverlay.draw('Barope', {
-          'type': 'floating-chat',
-          'floating-chat.donateButton.text': 'Support Me',
-          'floating-chat.donateButton.background-color': '#00b9fe',
-          'floating-chat.donateButton.text-color': '#fff'
-        });
-      }
-    };
-    document.body.appendChild(script);
-
-    return () => {
-      // Cleanup script on unmount
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
-    };
-  }, []);
-
   return (
     <Router>
       <AuthProvider>
