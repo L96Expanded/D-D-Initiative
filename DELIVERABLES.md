@@ -359,13 +359,15 @@ D-D-Initiative/
 ## Quick Commands for Verification
 
 ```bash
-# Navigate to project
-cd "c:\Users\david\OneDrive\Documents\School\DevOps\DnD_Initiative_Project\D-D-Initiative"
+# Clone the repository (if not already done)
+git clone https://github.com/L96Expanded/D-D-Initiative.git
+cd D-D-Initiative
 
 # Setup and run tests
 cd backend
 python -m venv .venv
-.venv\Scripts\activate
+.venv\Scripts\activate  # On Windows
+# source .venv/bin/activate  # On Linux/Mac
 pip install -r requirements.txt
 pip install -r requirements-dev.txt
 pytest tests/ -v --cov=app --cov-report=html --cov-fail-under=70
