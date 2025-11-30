@@ -665,6 +665,29 @@ Created comprehensive documentation:
 - Created `getApiBaseUrl()` helper function
 - Fixed all 19 hardcoded URLs across 6 files
 
+### Challenge 6: UUID Type Mismatch (PostgreSQL)
+
+**Problem**: Encounter creation worked with 1 creature but failed with 2+ creatures with error: "Can't match sentinel values in result set to parameter sets". This was a critical SQLAlchemy UUID type mismatch.
+
+**Root Cause**: Custom UUID type converter was passing strings to PostgreSQL instead of UUID objects:
+```python
+elif dialect.name == 'postgresql':
+    return str(value)  # ❌ Wrong - PostgreSQL expects UUID objects
+```
+
+**Solution**:
+- Fixed `process_bind_param()` to pass UUID objects directly to PostgreSQL:
+```python
+elif dialect.name == 'postgresql':
+    if not isinstance(value, uuid.UUID):
+        return uuid.UUID(value)
+    return value  # ✅ Correct - Pass UUID object as-is
+```
+- SQLAlchemy can now properly track multiple objects during batch inserts
+- Fixed in commit `f2c40bb`
+
+**Impact**: Resolved critical production bug preventing encounter creation with multiple creatures
+
 ---
 
 ## 7. Results and Impact
@@ -690,10 +713,11 @@ Created comprehensive documentation:
 ### 7.3 Reliability
 
 - **98% CI/CD success rate**
-- **Zero production incidents** since improvements
+- **Critical bugs identified and fixed** via comprehensive error logging
 - **< 5 minute rollback capability**
 - **Automated health checks** every 30 seconds
 - **99.9% uptime** over 30 days
+- **Production debugging** with detailed error messages enabled rapid bug fixes
 
 ### 7.4 Security
 

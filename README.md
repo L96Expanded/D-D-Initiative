@@ -8,7 +8,7 @@ A production-ready, full-stack web application for tracking D&D encounters with 
 ## ✨ Features
 
 - **User Authentication**: Secure JWT-based authentication with bcrypt password hashing
-- **Encounter Management**: Create, edit, and delete encounters with multiple creatures
+- **Encounter Management**: Create, edit, and delete encounters with multiple creatures (bug fix Nov 30, 2025)
 - **Initiative Tracking**: Automatic sorting by initiative with turn-by-turn progression
 - **Dual-Window System**: Separate DM control panel and player display window
 - **Image Upload & Management**: Creature images with auto-fetch from D&D 5e API
@@ -305,6 +305,15 @@ docker-compose up -d
 cd backend
 pip install -r requirements-dev.txt
 pytest tests/ -v
+```
+
+### Multiple Creatures Failing (Fixed)
+```bash
+# If you encounter "Can't match sentinel values" error:
+# This was fixed in commit f2c40bb (Nov 30, 2025)
+# Update to latest code:
+git pull origin main
+docker-compose up --build -d
 ```
 
 ## 📚 Documentation
