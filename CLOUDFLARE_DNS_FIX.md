@@ -52,6 +52,8 @@ Go to **SSL/TLS** → **Overview**:
 - **Encryption mode**: Full (strict) or Full
 - This ensures HTTPS works correctly with Azure
 
+**CRITICAL**: If using Cloudflare proxy (orange cloud), you MUST use "Full" or "Full (strict)" mode!
+
 ### Step 4: Verify Page Rules (Optional)
 
 Go to **Rules** → **Page Rules**:
