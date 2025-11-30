@@ -224,7 +224,7 @@ async def get_creature(
 @router.post("/{encounter_id}/creatures", response_model=CreatureResponse, status_code=status.HTTP_201_CREATED)
 async def add_creature_to_encounter(
     encounter_id: uuid.UUID,
-    creature_data: CreatureCreate,
+    creature_data: CreatureCreateNested,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -245,7 +245,9 @@ async def add_creature_to_encounter(
         name=creature_data.name,
         initiative=creature_data.initiative,
         creature_type=creature_data.creature_type,
-        image_url=creature_data.image_url
+        image_url=creature_data.image_url,
+        hit_points=creature_data.hit_points,
+        max_hit_points=creature_data.max_hit_points
     )
 
     db.add(db_creature)
@@ -285,13 +287,17 @@ async def update_creature(
         creature.creature_type = creature_data.creature_type
     if creature_data.image_url is not None:
         creature.image_url = creature_data.image_url
+    if creature_data.hit_points is not None:
+        creature.hit_points = creature_data.hit_points
+    if creature_data.max_hit_points is not None:
+        creature.max_hit_points = creature_data.max_hit_points
     
     db.commit()
     db.refresh(creature)
     
     return CreatureResponse.model_validate(creature)
 
-@router.delete("/{encounter_id}/creatures/{creature_id}", status_code=status.HTTP_200_OK)
+@router.delete("/{encounter_id}/creatures/{creature_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_creature(
     encounter_id: uuid.UUID,
     creature_id: uuid.UUID,

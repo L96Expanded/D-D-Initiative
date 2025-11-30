@@ -165,6 +165,22 @@ async def update_preset(
     if preset_data.background_image is not None:
         preset.background_image = preset_data.background_image
     
+    # Update creatures if provided
+    if preset_data.creatures is not None:
+        # Delete existing creatures
+        db.query(PresetCreature).filter(PresetCreature.preset_id == preset_id).delete()
+        
+        # Add new creatures
+        for creature_data in preset_data.creatures:
+            db_creature = PresetCreature(
+                preset_id=preset_id,
+                name=creature_data.name,
+                initiative=creature_data.initiative,
+                creature_type=creature_data.creature_type,
+                image_url=creature_data.image_url
+            )
+            db.add(db_creature)
+    
     db.commit()
     db.refresh(preset)
     
