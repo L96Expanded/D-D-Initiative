@@ -11,7 +11,7 @@ bcrypt==4.0.1
 python-dotenv==1.0.0
 pydantic==2.5.0
 pydantic-settings==2.1.0
-Pillow==10.1.0
+Pillow==10.4.0
 aiofiles==23.2.0
 email-validator==2.1.0
 azure-storage-blob==12.19.0

@@ -11,7 +11,7 @@ on:
 
 env:
   NODE_VERSION: '18.x'
-  PYTHON_VERSION: '3.13'
+  PYTHON_VERSION: '3.12'
 
 jobs:
   # Backend Tests and Security
