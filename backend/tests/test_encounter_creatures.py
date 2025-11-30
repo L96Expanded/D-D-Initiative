@@ -161,8 +161,6 @@ class TestEncounterCreatureOperations:
         update_data = {
             "name": "Updated Creature",
             "initiative": 25,
-            "hit_points": 50,
-            "max_hit_points": 50,
         }
 
         response = client.put(
@@ -175,10 +173,9 @@ class TestEncounterCreatureOperations:
         data = response.json()
         assert data["name"] == "Updated Creature"
         assert data["initiative"] == 25
-        assert data["hit_points"] == 50
 
-    def test_update_creature_hit_points_only(self, client, authenticated_headers, sample_encounter_data, sample_creature_data):
-        """Test updating only creature hit points."""
+    def test_update_creature_initiative_only(self, client, authenticated_headers, sample_encounter_data, sample_creature_data):
+        """Test updating only creature initiative."""
         # Create encounter and creature
         encounter_response = client.post(
             "/encounters/",
@@ -194,9 +191,10 @@ class TestEncounterCreatureOperations:
             headers=authenticated_headers,
         )
         creature_id = creature_response.json()["id"]
+        original_name = creature_response.json()["name"]
 
-        # Update only hit points
-        update_data = {"hit_points": 15}
+        # Update only initiative
+        update_data = {"initiative": 25}
 
         response = client.put(
             f"/encounters/{encounter_id}/creatures/{creature_id}",
@@ -206,7 +204,8 @@ class TestEncounterCreatureOperations:
 
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
-        assert data["hit_points"] == 15
+        assert data["initiative"] == 25
+        assert data["name"] == original_name  # Name should remain unchanged
         assert data["name"] == sample_creature_data["name"]  # Name unchanged
 
     def test_update_creature_from_wrong_encounter(self, client, authenticated_headers, sample_encounter_data, sample_creature_data):
