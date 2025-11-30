@@ -6,7 +6,7 @@ from app.models.database import get_db
 from app.models.models import User, Preset, PresetCreature
 from app.models.schemas import (
     PresetCreate, PresetUpdate, PresetResponse, 
-    PresetSummary, CreatureCreate, ErrorResponse
+    PresetSummary, CreatureCreate, CreatureCreateNested, ErrorResponse
 )
 from app.utils.dependencies import get_current_user
 import uuid
@@ -76,9 +76,9 @@ async def create_preset(
     db.commit()
     db.refresh(db_preset)
     
-    # Convert preset creatures to CreatureCreate format for response
+    # Convert preset creatures to CreatureCreateNested format for response
     creatures = [
-        CreatureCreate(
+        CreatureCreateNested(
             name=pc.name,
             initiative=pc.initiative,
             creature_type=pc.creature_type,
@@ -116,9 +116,9 @@ async def get_preset(
             detail="Preset not found"
         )
     
-    # Convert preset creatures to CreatureCreate format
+    # Convert preset creatures to CreatureCreateNested format
     creatures = [
-        CreatureCreate(
+        CreatureCreateNested(
             name=pc.name,
             initiative=pc.initiative,
             creature_type=pc.creature_type,
@@ -168,9 +168,9 @@ async def update_preset(
     db.commit()
     db.refresh(preset)
     
-    # Convert preset creatures to CreatureCreate format
+    # Convert preset creatures to CreatureCreateNested format
     creatures = [
-        CreatureCreate(
+        CreatureCreateNested(
             name=pc.name,
             initiative=pc.initiative,
             creature_type=pc.creature_type,

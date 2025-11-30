@@ -105,7 +105,7 @@ class PresetResponse(PresetBase):
     user_id: uuid.UUID
     created_at: datetime
     updated_at: datetime
-    creatures: List[CreatureCreate] = []  # Using CreatureCreate since presets store templates
+    creatures: List[CreatureCreateNested] = []  # Using CreatureCreateNested since presets are templates without encounters
     
     model_config = ConfigDict(from_attributes=True)
 
