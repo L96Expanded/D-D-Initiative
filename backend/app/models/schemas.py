@@ -33,8 +33,6 @@ class CreatureBase(BaseModel):
     initiative: int = Field(..., ge=0, le=100)
     creature_type: CreatureType
     image_url: Optional[str] = None
-    hit_points: Optional[int] = Field(None, ge=0)
-    max_hit_points: Optional[int] = Field(None, ge=0)
 
 class CreatureCreateNested(CreatureBase):
     """Schema for creating creatures nested within encounters (no encounter_id needed)."""
@@ -48,8 +46,6 @@ class CreatureUpdate(BaseModel):
     initiative: Optional[int] = Field(None, ge=0, le=100)
     creature_type: Optional[CreatureType] = None
     image_url: Optional[str] = None
-    hit_points: Optional[int] = Field(None, ge=0)
-    max_hit_points: Optional[int] = Field(None, ge=0)
 
 class CreatureResponse(CreatureBase):
     id: uuid.UUID

@@ -94,8 +94,6 @@ class Creature(Base):
     initiative = Column(Integer, nullable=False)
     creature_type = Column(Enum(CreatureType), nullable=False)
     image_url = Column(String(255), nullable=True)
-    hit_points = Column(Integer, nullable=True)
-    max_hit_points = Column(Integer, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     # Relationships

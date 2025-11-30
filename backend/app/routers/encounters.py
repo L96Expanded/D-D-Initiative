@@ -245,9 +245,7 @@ async def add_creature_to_encounter(
         name=creature_data.name,
         initiative=creature_data.initiative,
         creature_type=creature_data.creature_type,
-        image_url=creature_data.image_url,
-        hit_points=creature_data.hit_points,
-        max_hit_points=creature_data.max_hit_points
+        image_url=creature_data.image_url
     )
 
     db.add(db_creature)
@@ -287,10 +285,6 @@ async def update_creature(
         creature.creature_type = creature_data.creature_type
     if creature_data.image_url is not None:
         creature.image_url = creature_data.image_url
-    if creature_data.hit_points is not None:
-        creature.hit_points = creature_data.hit_points
-    if creature_data.max_hit_points is not None:
-        creature.max_hit_points = creature_data.max_hit_points
     
     db.commit()
     db.refresh(creature)
