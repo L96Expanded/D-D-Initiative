@@ -302,13 +302,13 @@ const EditEncounterModal: React.FC<EditEncounterModalProps> = ({
                         <img 
                           src={init.image_file ? URL.createObjectURL(init.image_file) : init.image_url} 
                           alt={`${init.name} preview`}
-                          className="w-20 h-20 object-cover rounded border-2 border-gray-600"
+                          className="w-12 h-12 object-cover rounded border-2 border-gray-600"
                           onError={(e) => {
                             e.currentTarget.style.display = 'none';
                           }}
                         />
                       ) : (
-                        <div className="w-20 h-20 bg-gray-800 rounded border-2 border-dashed border-gray-600 flex items-center justify-center">
+                        <div className="w-12 h-12 bg-gray-800 rounded border-2 border-dashed border-gray-600 flex items-center justify-center">
                           <span className="text-xs text-gray-500">No Image</span>
                         </div>
                       )}

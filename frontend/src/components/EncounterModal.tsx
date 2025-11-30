@@ -252,7 +252,7 @@ const EncounterModal: React.FC<EncounterModalProps> = ({ isOpen, onClose, onSubm
                     <img 
                       src={URL.createObjectURL(init.image_file)} 
                       alt={`${init.name} preview`}
-                      className="w-8 h-8 object-cover rounded border border-gray-500"
+                      className="w-12 h-12 object-cover rounded border border-gray-500"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
                       }}

@@ -154,7 +154,7 @@ const CreatureModal: React.FC<CreatureModalProps> = ({ isOpen, onClose, onSubmit
               <img 
                 src={imageUrl} 
                 alt={name} 
-                className="w-16 h-16 object-cover rounded border border-gray-600"
+                className="w-12 h-12 object-cover rounded border border-gray-600"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.style.display = 'none';

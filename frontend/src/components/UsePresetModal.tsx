@@ -268,7 +268,7 @@ const UsePresetModal: React.FC<UsePresetModalProps> = ({ isOpen, preset, onClose
                         <img 
                           src={creature.image_url} 
                           alt={creature.name}
-                          className="w-8 h-8 rounded object-cover border border-gray-600"
+                          className="w-12 h-12 rounded object-cover border border-gray-600"
                           onError={(e) => { e.currentTarget.style.display = 'none'; }}
                         />
                       )}
