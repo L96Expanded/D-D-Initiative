@@ -122,7 +122,7 @@ const PresetModal: React.FC<PresetModalProps> = ({ isOpen, onClose, onSubmit }) 
 
   return (
     <div className="modal-overlay" onClick={handleClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
+      <div className="modal-content w-4/5 max-w-none" onClick={e => e.stopPropagation()}>
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">Create New Preset</h2>
           <button onClick={handleClose} className="text-gray-400 hover:text-white">

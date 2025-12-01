@@ -191,7 +191,7 @@ const EditEncounterModal: React.FC<EditEncounterModalProps> = ({
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content max-w-3xl">
+      <div className="modal-content w-4/5 max-w-none">
         <h3 className="text-xl font-bold mb-4 text-center">
           Edit Encounter
         </h3>

@@ -145,7 +145,7 @@ const EncounterModal: React.FC<EncounterModalProps> = ({ isOpen, onClose, onSubm
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content max-w-4xl">
+      <div className="modal-content w-4/5 max-w-none">
         <h3 className="text-xl font-bold mb-4 text-center">
           {initialData ? 'Edit Encounter' : 'Create New Encounter'}
         </h3>
