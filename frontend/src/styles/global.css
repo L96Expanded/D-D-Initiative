@@ -670,6 +670,16 @@ p {
     border-radius: 10px;
   }
   
+  .creature-edit-card {
+    padding: 0.5rem !important;
+  }
+  
+  .creature-edit-card img,
+  .creature-edit-card .w-12 {
+    width: 50px !important;
+    height: 50px !important;
+  }
+  
   .form-input {
     padding: 8px 10px;
     font-size: 0.9rem;
@@ -739,7 +749,7 @@ p {
   border-radius: 25px;
 
   padding: 2rem;
-  max-width: 500px;
+  max-width: 900px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
@@ -750,4 +760,21 @@ p {
 @keyframes modalSlideIn {
   from { opacity: 0; transform: scale(0.9) translateY(-50px); }
   to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Creature edit cards - compact styling */
+.creature-edit-card {
+  padding: 0.75rem !important;
+  margin-bottom: 0.5rem;
+}
+
+.creature-edit-card img {
+  width: 80px !important;
+  height: 80px !important;
+  border-radius: 8px;
+}
+
+.creature-edit-card .w-12 {
+  width: 80px !important;
+  height: 80px !important;
 }

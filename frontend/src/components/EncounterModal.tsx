@@ -145,7 +145,7 @@ const EncounterModal: React.FC<EncounterModalProps> = ({ isOpen, onClose, onSubm
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content w-4/5 max-w-none">
+      <div className="modal-content">
         <h3 className="text-xl font-bold mb-4 text-center">
           {initialData ? 'Edit Encounter' : 'Create New Encounter'}
         </h3>
@@ -256,6 +256,7 @@ const EncounterModal: React.FC<EncounterModalProps> = ({ isOpen, onClose, onSubm
                       src={URL.createObjectURL(init.image_file)} 
                       alt={`${init.name} preview`}
                       className="w-12 h-12 object-cover rounded border border-gray-500"
+                      style={{ width: '80px', height: '80px' }}
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
                       }}
