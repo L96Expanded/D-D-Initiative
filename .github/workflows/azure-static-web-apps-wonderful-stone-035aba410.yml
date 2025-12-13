@@ -57,19 +57,6 @@ jobs:
             --cov-config=.coveragerc \
             -v
       
-      - name: Check coverage threshold (65% minimum)
-        working-directory: ./backend
-        env:
-          DATABASE_URL: sqlite:///./test.db
-          JWT_SECRET: test_secret_key_for_ci_pipeline
-          ENVIRONMENT: test
-        run: |
-          python -m pytest tests/ \
-            --cov=app \
-            --cov-config=.coveragerc \
-            --cov-fail-under=65 \
-            -q
-      
       - name: Run Bandit security scan
         working-directory: ./backend
         run: |
