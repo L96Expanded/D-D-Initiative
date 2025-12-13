@@ -68,7 +68,11 @@ jobs:
             SECRET_KEY="${{ secrets.SECRET_KEY }}" \
             JWT_SECRET="${{ secrets.SECRET_KEY }}" \
             AZURE_STORAGE_CONNECTION_STRING="${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+            AZURE_STORAGE_CONTAINER_NAME="creature-images" \
+            USE_AZURE_STORAGE="true" \
             ENVIRONMENT="production" \
+            UPLOAD_DIR="/tmp/uploads" \
+            DATABASE_IMAGES_DIR="/app/database_images" \
             CORS_ORIGINS='["https://wonderful-stone-035aba410.3.azurestaticapps.net","https://karsusinitiative.com","https://www.karsusinitiative.com","https://dnd-initiative-prod.azurewebsites.net","https://api.karsusinitiative.com","http://localhost:3000"]' \
             ALLOWED_HOSTS='["wonderful-stone-035aba410.3.azurestaticapps.net","karsusinitiative.com","www.karsusinitiative.com","dnd-initiative-prod.azurewebsites.net","api.karsusinitiative.com","localhost"]' \
             SCM_DO_BUILD_DURING_DEPLOYMENT="false" \
@@ -79,6 +83,12 @@ jobs:
           --name ${{ env.AZURE_WEBAPP_NAME }} \
           --resource-group BCSAI2025-DEVOPS-STUDENTS-A \
           --query "[?name=='CORS_ORIGINS'].value" -o tsv
+        
+        echo "Verifying Database and Storage Configuration..."
+        az webapp config appsettings list \
+          --name ${{ env.AZURE_WEBAPP_NAME }} \
+          --resource-group BCSAI2025-DEVOPS-STUDENTS-A \
+          --query "[?name=='DATABASE_URL' || name=='AZURE_STORAGE_CONNECTION_STRING' || name=='USE_AZURE_STORAGE'].{Name:name, ValueSet:value != ''}" -o table
         
         echo "Note: CORS is handled by FastAPI CORSMiddleware with allow_credentials=true"
         echo "Azure's built-in CORS is disabled to allow credential support"

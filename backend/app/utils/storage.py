@@ -4,11 +4,15 @@ Storage service for handling file uploads to local filesystem or Azure Blob Stor
 import os
 import uuid
 import aiofiles
+import logging
 from io import BytesIO
 from PIL import Image
 from typing import Optional
-from fastapi import UploadFile
+from fastapi import UploadFile, HTTPException
 from app.config import settings
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 # Azure Blob Storage (optional)
 try:
@@ -23,21 +27,42 @@ class StorageService:
     
     def __init__(self):
         self.use_azure = settings.USE_AZURE_STORAGE and AZURE_AVAILABLE
+        
+        if settings.USE_AZURE_STORAGE and not AZURE_AVAILABLE:
+            logger.warning("Azure Storage requested but azure-storage-blob not installed. Falling back to local storage.")
+            logger.info("Install with: pip install azure-storage-blob")
+            self.use_azure = False
+        
         if self.use_azure:
-            self.blob_service_client = BlobServiceClient.from_connection_string(
-                settings.AZURE_STORAGE_CONNECTION_STRING
-            )
-            self.container_name = settings.AZURE_STORAGE_CONTAINER_NAME
-            self._ensure_container_exists()
+            try:
+                self.blob_service_client = BlobServiceClient.from_connection_string(
+                    settings.AZURE_STORAGE_CONNECTION_STRING
+                )
+                self.container_name = settings.AZURE_STORAGE_CONTAINER_NAME
+                self._ensure_container_exists()
+                logger.info(f"Azure Blob Storage initialized (container: {self.container_name})")
+            except Exception as e:
+                logger.error(f"Failed to initialize Azure Blob Storage: {e}")
+                logger.warning("Falling back to local storage")
+                self.use_azure = False
+        
+        if not self.use_azure:
+            logger.info(f"Using local file storage: {settings.UPLOAD_DIR}")
+            os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
     
     def _ensure_container_exists(self):
         """Ensure the Azure Blob Storage container exists."""
         try:
             container_client = self.blob_service_client.get_container_client(self.container_name)
             if not container_client.exists():
+                logger.info(f"Creating Azure Blob container: {self.container_name}")
                 container_client.create_container(public_access='blob')
+                logger.info(f"Container {self.container_name} created successfully")
+            else:
+                logger.debug(f"Container {self.container_name} already exists")
         except Exception as e:
-            print(f"Error ensuring container exists: {e}")
+            logger.error(f"Error ensuring container exists: {e}")
+            raise
     
     async def save_image(
         self, 
@@ -77,6 +102,7 @@ class StorageService:
         """Optimize image size and quality."""
         try:
             img = Image.open(BytesIO(content))
+            original_size = img.size
             
             # Convert RGBA to RGB if necessary
             if img.mode == 'RGBA':
@@ -87,13 +113,19 @@ class StorageService:
             # Resize if needed
             if img.width > max_size[0] or img.height > max_size[1]:
                 img.thumbnail(max_size, Image.Resampling.LANCZOS)
+                logger.debug(f"Resized image from {original_size} to {img.size}")
             
             # Save optimized image to bytes
             output = BytesIO()
             img.save(output, format='JPEG', quality=85, optimize=True)
-            return output.getvalue()
+            optimized_content = output.getvalue()
+            
+            compression_ratio = len(optimized_content) / len(content) * 100
+            logger.debug(f"Optimized image: {len(content)} -> {len(optimized_content)} bytes ({compression_ratio:.1f}%)")
+            
+            return optimized_content
         except Exception as e:
-            print(f"Error optimizing image: {e}")
+            logger.warning(f"Error optimizing image: {e}. Using original.")
             return content  # Return original if optimization fails
     
     async def _save_to_azure(self, filename: str, content: bytes, content_type: Optional[str]) -> str:
@@ -107,6 +139,7 @@ class StorageService:
             # Set content type for proper browser handling
             content_settings = ContentSettings(content_type=content_type or 'image/jpeg')
             
+            logger.info(f"Uploading {len(content)} bytes to Azure Blob: {filename}")
             blob_client.upload_blob(
                 content,
                 overwrite=True,
@@ -114,23 +147,32 @@ class StorageService:
             )
             
             # Return public URL
-            return blob_client.url
+            url = blob_client.url
+            logger.info(f"Successfully uploaded to: {url}")
+            return url
         except Exception as e:
-            print(f"Error saving to Azure: {e}")
-            raise
+            logger.error(f"Error saving to Azure: {e}")
+            raise HTTPException(status_code=500, detail=f"Failed to upload file to cloud storage: {str(e)}")
     
     async def _save_to_local(self, filename: str, content: bytes) -> str:
         """Save file to local filesystem and return relative path."""
-        # Create full path
-        file_path = os.path.join(settings.UPLOAD_DIR, filename)
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        
-        # Save file
-        async with aiofiles.open(file_path, "wb") as buffer:
-            await buffer.write(content)
-        
-        # Return relative path (frontend will prepend API URL)
-        return f"/uploads/{filename}"
+        try:
+            # Create full path
+            file_path = os.path.join(settings.UPLOAD_DIR, filename)
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            
+            # Save file
+            logger.info(f"Saving {len(content)} bytes to local storage: {file_path}")
+            async with aiofiles.open(file_path, "wb") as buffer:
+                await buffer.write(content)
+            
+            # Return relative path (frontend will prepend API URL)
+            relative_path = f"/uploads/{filename}"
+            logger.info(f"Saved to local storage: {relative_path}")
+            return relative_path
+        except Exception as e:
+            logger.error(f"Error saving to local storage: {e}")
+            raise HTTPException(status_code=500, detail=f"Failed to save file locally: {str(e)}")
     
     async def delete_image(self, image_url: str) -> bool:
         """Delete an image from storage."""
@@ -144,14 +186,17 @@ class StorageService:
         try:
             # Extract blob name from URL
             blob_name = image_url.split(f"{self.container_name}/")[-1]
+            logger.info(f"Deleting blob from Azure: {blob_name}")
+            
             blob_client = self.blob_service_client.get_blob_client(
                 container=self.container_name,
                 blob=blob_name
             )
             blob_client.delete_blob()
+            logger.info(f"Successfully deleted blob: {blob_name}")
             return True
         except Exception as e:
-            print(f"Error deleting from Azure: {e}")
+            logger.error(f"Error deleting from Azure: {e}")
             return False
     
     async def _delete_from_local(self, image_path: str) -> bool:
@@ -162,11 +207,15 @@ class StorageService:
             file_path = os.path.join(settings.UPLOAD_DIR, relative_path)
             
             if os.path.exists(file_path):
+                logger.info(f"Deleting local file: {file_path}")
                 os.remove(file_path)
+                logger.info(f"Successfully deleted: {file_path}")
                 return True
-            return False
+            else:
+                logger.warning(f"File not found for deletion: {file_path}")
+                return False
         except Exception as e:
-            print(f"Error deleting from local: {e}")
+            logger.error(f"Error deleting from local: {e}")
             return False
 
 

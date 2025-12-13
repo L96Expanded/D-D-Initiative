@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     AZURE_STORAGE_CONTAINER_NAME: str = "creature-images"
     USE_AZURE_STORAGE: bool = False  # Auto-enabled if connection string is set
     
+    # Database images directory (for built-in creature images)
+    DATABASE_IMAGES_DIR: str = "./database_images"
+    
     # CORS - Updated for production
     CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
     
@@ -86,7 +89,12 @@ class Settings(BaseSettings):
             self.SECRET_KEY = self.JWT_SECRET
         
         # Auto-enable Azure Storage if connection string is provided
-        if self.AZURE_STORAGE_CONNECTION_STRING:
+        if self.AZURE_STORAGE_CONNECTION_STRING and self.AZURE_STORAGE_CONNECTION_STRING != "":
             self.USE_AZURE_STORAGE = True
+            print(f"✓ Azure Blob Storage enabled (container: {self.AZURE_STORAGE_CONTAINER_NAME})", file=sys.stderr)
+        else:
+            print(f"ℹ Using local file storage in {self.UPLOAD_DIR}", file=sys.stderr)
+            if self.ENVIRONMENT == "production":
+                print("⚠ WARNING: Production environment using local storage. Consider using Azure Blob Storage!", file=sys.stderr)
 
 settings = Settings()
