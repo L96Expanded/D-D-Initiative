@@ -35,9 +35,8 @@ jobs:
     
     - name: Run backend tests
       run: |
-        echo "Skipping tests for now - deploy only"
-        # cd backend
-        # pytest --maxfail=1 --disable-warnings -q
+        echo "Tests are run in the separate Static Web App workflow"
+        echo "Skipping tests here to speed up backend deployment"
     
     # ========================================
     # Deploy to Azure
