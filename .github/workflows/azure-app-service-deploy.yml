@@ -72,8 +72,8 @@ jobs:
             ENVIRONMENT="production" \
             UPLOAD_DIR="/tmp/uploads" \
             DATABASE_IMAGES_DIR="/app/database_images" \
-            CORS_ORIGINS='["https://wonderful-stone-035aba410.3.azurestaticapps.net","https://karsusinitiative.com","https://www.karsusinitiative.com","https://dnd-initiative-prod.azurewebsites.net","https://api.karsusinitiative.com","http://localhost:3000"]' \
-            ALLOWED_HOSTS='["wonderful-stone-035aba410.3.azurestaticapps.net","karsusinitiative.com","www.karsusinitiative.com","dnd-initiative-prod.azurewebsites.net","api.karsusinitiative.com","localhost"]' \
+            CORS_ORIGINS='["https://wonderful-stone-035aba410.3.azurestaticapps.net","https://karsusinitiative.com","https://www.karsusinitiative.com","http://karsusinitiative.com","http://www.karsusinitiative.com","https://dnd-initiative-prod.azurewebsites.net","https://api.karsusinitiative.com","http://localhost:3000","http://127.0.0.1:3000"]' \
+            ALLOWED_HOSTS='["wonderful-stone-035aba410.3.azurestaticapps.net","karsusinitiative.com","www.karsusinitiative.com","dnd-initiative-prod.azurewebsites.net","api.karsusinitiative.com","localhost","127.0.0.1"]' \
             SCM_DO_BUILD_DURING_DEPLOYMENT="false" \
             WEBSITE_HTTPLOGGING_RETENTION_DAYS="3"
         
@@ -91,6 +91,20 @@ jobs:
         
         echo "Note: CORS is handled by FastAPI CORSMiddleware with allow_credentials=true"
         echo "Azure's built-in CORS is disabled to allow credential support"
+        
+    - name: Disable Azure Built-in CORS
+      run: |
+        echo "Disabling Azure's built-in CORS (using FastAPI CORS instead)..."
+        az webapp cors remove \
+          --name ${{ env.AZURE_WEBAPP_NAME }} \
+          --resource-group BCSAI2025-DEVOPS-STUDENTS-A \
+          --allowed-origins '*' || true
+        
+        # Verify CORS is empty
+        echo "Verifying Azure CORS is cleared..."
+        az webapp cors show \
+          --name ${{ env.AZURE_WEBAPP_NAME }} \
+          --resource-group BCSAI2025-DEVOPS-STUDENTS-A
     
     - name: Restart App Service
       run: |

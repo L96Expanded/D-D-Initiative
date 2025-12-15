@@ -40,15 +40,15 @@ if settings.ENVIRONMENT == "production":
         allowed_hosts=settings.ALLOWED_HOSTS
     )
 
-# Configure CORS
+# Configure CORS - Critical for cross-origin requests
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["*"],
-    expose_headers=["*"],
-    max_age=3600,
+    allow_methods=["*"],  # Allow all methods
+    allow_headers=["*"],  # Allow all headers including Authorization, Content-Type
+    expose_headers=["*"],  # Expose all response headers
+    max_age=86400,  # Cache preflight for 24 hours
 )
 
 # Add Prometheus metrics middleware
@@ -99,6 +99,18 @@ async def debug_cors():
         "cors_origins": settings.CORS_ORIGINS,
         "allowed_hosts": settings.ALLOWED_HOSTS,
         "environment": settings.ENVIRONMENT
+    }
+
+# Explicit test endpoint for CORS
+@app.options("/test-cors")
+@app.get("/test-cors")
+async def test_cors(request: Request):
+    """Test endpoint to verify CORS is working."""
+    return {
+        "message": "CORS is working!",
+        "origin": request.headers.get("origin", "No origin header"),
+        "method": request.method,
+        "cors_origins": settings.CORS_ORIGINS
     }
 
 # Initialize JSON-based creature database
