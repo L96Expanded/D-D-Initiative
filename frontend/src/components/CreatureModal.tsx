@@ -4,6 +4,17 @@ import Modal from './Modal';
 import { getApiBaseUrl } from '../utils/api';
 import type { CreateCreature, CreatureType } from '../types';
 
+// Helper function to get default image by creature type
+const getCreatureTypeDefault = (creatureType: CreatureType): string => {
+  const typeDefaults: Record<CreatureType, string> = {
+    'player': '/images/defaults/Player.png',
+    'ally': '/images/defaults/Ally.png',
+    'enemy': '/images/defaults/Enemy.png',
+    'other': '/images/defaults/Other.png'
+  };
+  return typeDefaults[creatureType] || '/images/defaults/Other.png';
+};
+
 interface CreatureModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -81,14 +92,29 @@ const CreatureModal: React.FC<CreatureModalProps> = ({ isOpen, onClose, onSubmit
           const data = await response.json();
           console.log('API response data:', data);
           if (data.image_url) {
-            finalImageUrl = data.image_url;
-            setImageUrl(data.image_url); // Update the UI as well
+            // Check if it's the default "No Image" placeholder
+            if (data.source === 'default' || data.found_match === false) {
+              // Use creature type default image instead
+              finalImageUrl = getCreatureTypeDefault(creatureType);
+              console.log('Using creature type default:', finalImageUrl);
+            } else {
+              finalImageUrl = data.image_url;
+              console.log('Using API image:', finalImageUrl);
+            }
+            setImageUrl(finalImageUrl); // Update the UI as well
           }
         } else {
-          console.log('API response not ok:', response.status, response.statusText);
+          // API error - fall back to creature type default
+          console.log('API response not ok, using creature type default');
+          finalImageUrl = getCreatureTypeDefault(creatureType);
+          setImageUrl(finalImageUrl);
         }
       } catch (error) {
         console.error('Failed to fetch creature image during submit:', error);
+        // On error, fall back to creature type default
+        finalImageUrl = getCreatureTypeDefault(creatureType);
+        setImageUrl(finalImageUrl);
+        console.log('Using creature type default after error:', finalImageUrl);
       } finally {
         setIsFetchingImage(false);
       }
