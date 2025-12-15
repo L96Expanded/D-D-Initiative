@@ -27,11 +27,18 @@ app = FastAPI(
 # Create database tables - with error handling
 try:
     logger.info("Creating database tables...")
+    # Test database connection first
+    with engine.connect() as conn:
+        conn.execute("SELECT 1")
+    logger.info("Database connection verified")
+    
     models.Base.metadata.create_all(bind=engine)
     logger.info("Database tables created successfully")
 except Exception as e:
     logger.error(f"Failed to create database tables: {e}")
+    logger.error(f"Database URL: {settings.DATABASE_URL[:50]}...")
     logger.warning("Application will start but database operations may fail")
+    logger.warning("Please verify DATABASE_URL environment variable is correct")
 
 # Security middleware - Add trusted host middleware
 if settings.ENVIRONMENT == "production":
