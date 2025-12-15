@@ -34,7 +34,19 @@ const Login: React.FC = () => {
       await login(email, password);
       navigate('/home');
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Login failed. Please try again.');
+      // Extract error message from response
+      const errorMessage = err.response?.data?.detail || err.message || 'Login failed. Please try again.';
+      
+      // Make error messages more user-friendly
+      if (errorMessage.toLowerCase().includes('incorrect email or password')) {
+        setError('Incorrect email or password. Please try again.');
+      } else if (errorMessage.toLowerCase().includes('database')) {
+        setError('Server is temporarily unavailable. Please try again in a moment.');
+      } else {
+        setError(errorMessage);
+      }
+      
+      console.error('Login error:', err);
     } finally {
       setLoading(false);
     }

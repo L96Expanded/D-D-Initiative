@@ -45,7 +45,21 @@ const Register: React.FC = () => {
       await register(email, password, confirmPassword);
       navigate('/home');
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Registration failed. Please try again.');
+      // Extract error message from response
+      const errorMessage = err.response?.data?.detail || err.message || 'Registration failed. Please try again.';
+      
+      // Make error messages more user-friendly
+      if (errorMessage.toLowerCase().includes('email already registered')) {
+        setError('An account with that email already exists. Please log in instead.');
+      } else if (errorMessage.toLowerCase().includes('password')) {
+        setError(errorMessage);
+      } else if (errorMessage.toLowerCase().includes('database')) {
+        setError('Server is temporarily unavailable. Please try again in a moment.');
+      } else {
+        setError(errorMessage);
+      }
+      
+      console.error('Registration error:', err);
     } finally {
       setLoading(false);
     }
