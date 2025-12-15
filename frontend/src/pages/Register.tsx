@@ -45,8 +45,15 @@ const Register: React.FC = () => {
       await register(email, password, confirmPassword);
       navigate('/home');
     } catch (err: any) {
+      // Log full error for debugging
+      console.error('Full registration error:', err);
+      console.error('Error response:', err.response);
+      console.error('Error response data:', err.response?.data);
+      
       // Extract error message from response
-      const errorMessage = err.response?.data?.detail || err.message || 'Registration failed. Please try again.';
+      const errorMessage = err.response?.data?.detail || err.response?.data?.message || err.message || 'Registration failed. Please try again.';
+      
+      console.log('Extracted error message:', errorMessage);
       
       // Make error messages more user-friendly
       if (errorMessage.toLowerCase().includes('email already registered')) {
@@ -58,8 +65,6 @@ const Register: React.FC = () => {
       } else {
         setError(errorMessage);
       }
-      
-      console.error('Registration error:', err);
     } finally {
       setLoading(false);
     }
